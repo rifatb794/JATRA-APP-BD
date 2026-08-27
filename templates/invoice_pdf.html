@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>
+        Jatra App BD - Booking Invoice {{ ticket['pnr'] }}
+    </title>
+
+
+    <style>
+
+        /* =====================================================================
+           JATRA APP BD - PROFESSIONAL A4 BOOKING INVOICE
+           =====================================================================
+
+           এই HTML শুধু PDF-এর জন্য।
+
+           এটা base.html extend করছে না।
+
+           কারণ navbar / footer / website button ইত্যাদি invoice-এ
+           আসা উচিত না।
+
+           wkhtmltopdf modern CSS-এর কিছু feature perfectly render
+           করতে পারে না।
+
+           তাই professional PDF compatibility-এর জন্য এখানে:
+
+           ✅ Table based layout
+           ✅ Simple CSS
+           ✅ A4 optimized design
+           ✅ QR embedded as Base64
+           ✅ No external CSS dependency
+
+           ব্যবহার করা হয়েছে।
+
+           ===================================================================== */
+
+
+        @page {
+
+            size: A4;
+
+            margin: 0;
+        }
+
+
+        * {
+
+            box-sizing:
+                border-box;
+        }
+
+
+        html,
+        body {
+
+            margin:
+                0;
+
+            padding:
+                0;
+
+            background:
+                #ffffff;
+
+            color:
+                #1f2937;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            font-size:
+                11px;
+
+            line-height:
+                1.45;
+        }
+
+
+        body {
+
+            padding:
+                0;
+        }
+
+
+        .invoice-page {
+
+            width:
+                100%;
+
+            background:
+                #ffffff;
+
+            position:
+                relative;
+
+            overflow:
+                hidden;
+        }
+
+
+        /* ================================================================
+           WATERMARK
+           ================================================================ */
+
+        .watermark {
+
+            position:
+                fixed;
+
+            top:
+                42%;
+
+            left:
+                13%;
+
+            color:
+                rgba(
+                    17,
+                    60,
+                    101,
+                    0.035
+                );
+
+            font-size:
+                62px;
+
+            font-weight:
+                900;
+
+            letter-spacing:
+                3px;
+
+            transform:
+                rotate(-28deg);
+
+            white-space:
+                nowrap;
+
+            z-index:
+                -1;
+        }
+
+
+        /* ================================================================
+           BRAND HEADER
+           ================================================================ */
+
+        .brand-table {
+
+            width:
+                100%;
+
+            border-collapse:
+                collapse;
+
+            border-bottom:
+                4px solid #0b8f55;
+        }
+
+
+        .brand-table td {
+
+            vertical-align:
+                top;
+
+            padding-bottom:
+                14px;
+        }
+
+
+        .brand-left {
+
+            width:
+                58%;
+
+            text-align:
+                left;
+        }
+
+
+        .brand-right {
+
+            width:
+                42%;
+
+            text-align:
+                right;
+        }
+
+
+        .brand-name {
+
+            margin:
+                0;
+
+            color:
+                #113c65;
+
+            font-size:
+                29px;
+
+            font-weight:
+                900;
+
+            letter-spacing:
+                1px;
+        }
+
+
+        .brand-tagline {
+
+            margin-top:
+                2px;
+
+            color:
+                #0b8f55;
+
+            font-size:
+                11px;
+
+            font-weight:
+                bold;
+
+            letter-spacing:
+                .6px;
+
+            text-transform:
+                uppercase;
+        }
+
+
+        .brand-system {
+
+            margin-top:
+                7px;
+
+            color:
+                #6b7280;
+
+            font-size:
+                9px;
+
+            line-height:
+                1.5;
+        }
+
+
+        .invoice-title {
+
+            margin:
+                2px 0 0 0;
+
+            color:
+                #111827;
+
+            font-size:
+                20px;
+
+            font-weight:
+                800;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                .8px;
+        }
+
+
+        .invoice-ref {
+
+            margin-top:
+                7px;
+
+            color:
+                #113c65;
+
+            font-size:
+                13px;
+
+            font-weight:
+                800;
+        }
+
+
+        .invoice-date {
+
+            margin-top:
+                3px;
+
+            color:
+                #6b7280;
+
+            font-size:
+                9px;
+        }
+
+
+        /* ================================================================
+           STATUS BAR
+           ================================================================ */
+
+        .status-bar {
+
+            margin-top:
+                14px;
+
+            padding:
+                9px 11px;
+
+            border:
+                1px solid;
+
+            font-size:
+                10px;
+
+            font-weight:
+                800;
+
+            letter-spacing:
+                .3px;
+        }
+
+
+        .status-paid {
+
+            background:
+                #eefbf4;
+
+            border-color:
+                #86d8a8;
+
+            color:
+                #08783f;
+        }
+
+
+        .status-due {
+
+            background:
+                #fff6ec;
+
+            border-color:
+                #f1b57b;
+
+            color:
+                #b45309;
+        }
+
+
+        .status-cancelled {
+
+            background:
+                #fff1f2;
+
+            border-color:
+                #f2a3aa;
+
+            color:
+                #b91c1c;
+        }
+
+
+        /* ================================================================
+           SECTION TITLE
+           ================================================================ */
+
+        .section-title {
+
+            margin-top:
+                16px;
+
+            margin-bottom:
+                6px;
+
+            color:
+                #113c65;
+
+            font-size:
+                10px;
+
+            font-weight:
+                900;
+
+            letter-spacing:
+                .8px;
+
+            text-transform:
+                uppercase;
+
+            border-bottom:
+                1px solid #d9dee5;
+
+            padding-bottom:
+                5px;
+        }
+
+
+        /* ================================================================
+           COMMON TABLES
+           ================================================================ */
+
+        .info-table,
+        .route-table,
+        .fare-table,
+        .footer-table {
+
+            width:
+                100%;
+
+            border-collapse:
+                collapse;
+        }
+
+
+        .info-table td {
+
+            border:
+                1px solid #dfe4ea;
+
+            padding:
+                9px 10px;
+
+            vertical-align:
+                top;
+        }
+
+
+        .info-four td {
+
+            width:
+                25%;
+        }
+
+
+        .field-label {
+
+            display:
+                block;
+
+            margin-bottom:
+                4px;
+
+            color:
+                #7a838f;
+
+            font-size:
+                8px;
+
+            font-weight:
+                800;
+
+            letter-spacing:
+                .5px;
+
+            text-transform:
+                uppercase;
+        }
+
+
+        .field-value {
+
+            display:
+                block;
+
+            color:
+                #151a21;
+
+            font-size:
+                10.5px;
+
+            font-weight:
+                700;
+
+            word-break:
+                break-word;
+        }
+
+
+        .pnr-value {
+
+            color:
+                #0d5da8;
+
+            font-size:
+                12px;
+
+            font-weight:
+                900;
+        }
+
+
+        /* ================================================================
+           JOURNEY CARD
+           ================================================================ */
+
+        .journey-card {
+
+            border:
+                1px solid #d7dde4;
+
+            page-break-inside:
+                avoid;
+        }
+
+
+        .journey-head {
+
+            background:
+                #113c65;
+
+            color:
+                #ffffff;
+
+            padding:
+                8px 11px;
+
+            font-size:
+                10px;
+
+            font-weight:
+                bold;
+        }
+
+
+        .journey-head-right {
+
+            float:
+                right;
+
+            font-weight:
+                normal;
+
+            opacity:
+                .95;
+        }
+
+
+        .route-table td {
+
+            padding:
+                14px 11px;
+
+            vertical-align:
+                middle;
+        }
+
+
+        .route-side {
+
+            width:
+                40%;
+        }
+
+
+        .route-center {
+
+            width:
+                20%;
+
+            text-align:
+                center;
+        }
+
+
+        .route-right {
+
+            text-align:
+                right;
+        }
+
+
+        .route-small {
+
+            color:
+                #7a838f;
+
+            font-size:
+                8px;
+
+            font-weight:
+                800;
+
+            letter-spacing:
+                .7px;
+
+            text-transform:
+                uppercase;
+        }
+
+
+        .route-station {
+
+            margin-top:
+                4px;
+
+            color:
+                #111827;
+
+            font-size:
+                13px;
+
+            font-weight:
+                900;
+
+            line-height:
+                1.25;
+        }
+
+
+        .route-city {
+
+            margin-top:
+                3px;
+
+            color:
+                #667085;
+
+            font-size:
+                9px;
+        }
+
+
+        .route-line {
+
+            color:
+                #0b8f55;
+
+            font-size:
+                13px;
+
+            font-weight:
+                900;
+
+            white-space:
+                nowrap;
+        }
+
+
+        /* ================================================================
+           TICKET INFORMATION
+           ================================================================ */
+
+        .ticket-info-box {
+
+            border:
+                1px solid #dfe4ea;
+
+            padding:
+                9px 10px;
+
+            color:
+                #1f2937;
+
+            font-size:
+                10px;
+
+            font-weight:
+                700;
+
+            word-wrap:
+                break-word;
+
+            page-break-inside:
+                avoid;
+        }
+
+
+        /* ================================================================
+           PAYMENT TABLE
+           ================================================================ */
+
+        .fare-table {
+
+            page-break-inside:
+                avoid;
+        }
+
+
+        .fare-table th {
+
+            background:
+                #113c65;
+
+            color:
+                #ffffff;
+
+            border:
+                1px solid #113c65;
+
+            padding:
+                8px 9px;
+
+            font-size:
+                9px;
+
+            font-weight:
+                800;
+
+            text-align:
+                left;
+
+            letter-spacing:
+                .3px;
+
+            text-transform:
+                uppercase;
+        }
+
+
+        .fare-table td {
+
+            border:
+                1px solid #dfe4ea;
+
+            padding:
+                8px 9px;
+
+            font-size:
+                10px;
+
+            vertical-align:
+                middle;
+        }
+
+
+        .right {
+
+            text-align:
+                right !important;
+        }
+
+
+        .center {
+
+            text-align:
+                center !important;
+        }
+
+
+        .muted {
+
+            color:
+                #7a838f;
+        }
+
+
+        .summary-label {
+
+            text-align:
+                right;
+
+            color:
+                #4b5563;
+        }
+
+
+        .discount-value {
+
+            color:
+                #0b8f55;
+
+            font-weight:
+                800;
+        }
+
+
+        .paid-value {
+
+            color:
+                #08783f;
+
+            font-weight:
+                900;
+        }
+
+
+        .due-value {
+
+            color:
+                #c62828;
+
+            font-size:
+                12px !important;
+
+            font-weight:
+                900;
+        }
+
+
+        .grand-row td {
+
+            background:
+                #f5f7fa;
+
+            font-weight:
+                800;
+        }
+
+
+        /* ================================================================
+           TERMS + QR
+           ================================================================ */
+
+        .footer-table {
+
+            margin-top:
+                16px;
+
+            page-break-inside:
+                avoid;
+        }
+
+
+        .footer-left {
+
+            width:
+                72%;
+
+            vertical-align:
+                top;
+
+            padding-right:
+                14px;
+        }
+
+
+        .footer-right {
+
+            width:
+                28%;
+
+            vertical-align:
+                top;
+
+            text-align:
+                right;
+        }
+
+
+        .terms-title {
+
+            margin:
+                0 0 5px 0;
+
+            color:
+                #111827;
+
+            font-size:
+                9px;
+
+            font-weight:
+                900;
+
+            text-transform:
+                uppercase;
+        }
+
+
+        .terms {
+
+            margin:
+                0;
+
+            padding-left:
+                14px;
+
+            color:
+                #69717c;
+
+            font-size:
+                8px;
+
+            line-height:
+                1.55;
+        }
+
+
+        .qr-wrap {
+
+            display:
+                inline-block;
+
+            border:
+                1px solid #cfd6de;
+
+            background:
+                #ffffff;
+
+            padding:
+                6px;
+
+            text-align:
+                center;
+        }
+
+
+        .qr-wrap img {
+
+            display:
+                block;
+
+            width:
+                86px;
+
+            height:
+                86px;
+
+            margin:
+                0 auto;
+        }
+
+
+        .qr-caption {
+
+            margin-top:
+                4px;
+
+            background:
+                #113c65;
+
+            color:
+                #ffffff;
+
+            padding:
+                4px 5px;
+
+            font-size:
+                7px;
+
+            font-weight:
+                900;
+
+            letter-spacing:
+                .4px;
+        }
+
+
+        .qr-subtext {
+
+            margin-top:
+                4px;
+
+            color:
+                #7a838f;
+
+            font-size:
+                7px;
+
+            line-height:
+                1.3;
+        }
+
+
+        /* ================================================================
+           DOCUMENT FOOTER
+           ================================================================ */
+
+        .document-footer {
+
+            margin-top:
+                14px;
+
+            padding-top:
+                8px;
+
+            border-top:
+                1px solid #dfe4ea;
+
+            text-align:
+                center;
+
+            color:
+                #7a838f;
+
+            font-size:
+                8px;
+
+            line-height:
+                1.5;
+        }
+
+
+        .document-footer strong {
+
+            color:
+                #113c65;
+        }
+
+
+        .platform-note {
+
+            margin-top:
+                5px;
+
+            color:
+                #8a929d;
+
+            font-size:
+                7.5px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="invoice-page">
+
+
+    <!-- ===============================================================
+         BACKGROUND WATERMARK
+         =============================================================== -->
+
+    <div class="watermark">
+
+        JATRA APP BD
+
+    </div>
+
+
+    <!-- ===============================================================
+         1. BRAND + INVOICE HEADER
+         =============================================================== -->
+
+    <table class="brand-table">
+
+        <tr>
+
+
+            <td class="brand-left">
+
+
+                <h1 class="brand-name">
+
+                    JATRA APP BD
+
+                </h1>
+
+
+                <div class="brand-tagline">
+
+                    Your Smart Travel Partner
+
+                </div>
+
+
+                <div class="brand-system">
+
+                    Smart Multi-Transport Ticket Booking
+                    &amp; Management System
+
+                    <br>
+
+                    Digital Booking Document
+                    &bull;
+                    Bangladesh
+
+                </div>
+
+
+            </td>
+
+
+            <td class="brand-right">
+
+
+                <h2 class="invoice-title">
+
+
+                    {% if ticket['due_amount'] > 0 %}
+
+                        Reservation Invoice
+
+                    {% else %}
+
+                        Booking Invoice
+
+                    {% endif %}
+
+
+                </h2>
+
+
+                <div class="invoice-ref">
+
+                    PNR:
+
+                    {{ ticket['pnr'] }}
+
+                </div>
+
+
+                <div class="invoice-date">
+
+                    Generated:
+
+                    {{ current_time }}
+
+                </div>
+
+
+            </td>
+
+
+        </tr>
+
+    </table>
+
+
+    <!-- ===============================================================
+         2. BOOKING / PAYMENT STATUS
+         =============================================================== -->
+
+
+    {% if 'Cancelled' in ticket['status'] %}
+
+
+        <div
+            class="
+                status-bar
+                status-cancelled
+            "
+        >
+
+            BOOKING STATUS:
+
+            {{ ticket['status'] }}
+
+        </div>
+
+
+    {% elif ticket['due_amount'] > 0 %}
+
+
+        <div
+            class="
+                status-bar
+                status-due
+            "
+        >
+
+            RESERVATION ACTIVE
+
+            &nbsp;&bull;&nbsp;
+
+            PARTIAL PAYMENT RECEIVED
+
+            &nbsp;&bull;&nbsp;
+
+            OUTSTANDING:
+
+            BDT {{ ticket['due_amount'] }}
+
+        </div>
+
+
+    {% else %}
+
+
+        <div
+            class="
+                status-bar
+                status-paid
+            "
+        >
+
+            BOOKING CONFIRMED
+
+            &nbsp;&bull;&nbsp;
+
+            PAYMENT RECEIVED IN FULL
+
+            &nbsp;&bull;&nbsp;
+
+            DUE: BDT 0
+
+        </div>
+
+
+    {% endif %}
+
+
+    <!-- ===============================================================
+         3. PASSENGER AND BOOKING DETAILS
+         =============================================================== -->
+
+
+    <div class="section-title">
+
+        Passenger &amp; Booking Details
+
+    </div>
+
+
+    <table
+        class="
+            info-table
+            info-four
+        "
+    >
+
+        <tr>
+
+
+            <td>
+
+                <span class="field-label">
+
+                    Passenger
+
+                </span>
+
+
+                <span class="field-value">
+
+                    {{ ticket['passenger_name'] }}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <span class="field-label">
+
+                    PNR / Booking ID
+
+                </span>
+
+
+                <span
+                    class="
+                        field-value
+                        pnr-value
+                    "
+                >
+
+                    {{ ticket['pnr'] }}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <span class="field-label">
+
+                    Journey Date
+
+                </span>
+
+
+                <span class="field-value">
+
+                    {{ ticket['journey_date'] }}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <span class="field-label">
+
+                    Departure Time
+
+                </span>
+
+
+                <span class="field-value">
+
+                    {{ ticket['dep_time'] }}
+
+                </span>
+
+            </td>
+
+
+        </tr>
+
+    </table>
+
+
+    <!-- ===============================================================
+         4. JOURNEY INFORMATION
+         =============================================================== -->
+
+
+    <div class="section-title">
+
+        Journey Information
+
+    </div>
+
+
+    <div class="journey-card">
+
+
+        <div class="journey-head">
+
+
+            {{ ticket['operator'] }}
+
+
+            <span class="journey-head-right">
+
+                {{ ticket['transport_type'] }}
+
+            </span>
+
+
+        </div>
+
+
+        <table class="route-table">
+
+
+            <tr>
+
+
+                <td class="route-side">
+
+
+                    <div class="route-small">
+
+                        From
+
+                    </div>
+
+
+                    <div class="route-station">
+
+                        {{ frm_station }}
+
+                    </div>
+
+
+                    <div class="route-city">
+
+                        {{ ticket['departure'] }}
+
+                    </div>
+
+
+                </td>
+
+
+                <td class="route-center">
+
+
+                    <div class="route-line">
+
+                        ------ &gt;
+
+                    </div>
+
+
+                </td>
+
+
+                <td
+                    class="
+                        route-side
+                        route-right
+                    "
+                >
+
+
+                    <div class="route-small">
+
+                        To
+
+                    </div>
+
+
+                    <div class="route-station">
+
+                        {{ to_station }}
+
+                    </div>
+
+
+                    <div class="route-city">
+
+                        {{ ticket['destination'] }}
+
+                    </div>
+
+
+                </td>
+
+
+            </tr>
+
+
+        </table>
+
+
+    </div>
+
+
+    <!-- ===============================================================
+         TRANSPORT INFORMATION
+         =============================================================== -->
+
+
+    <table
+        class="
+            info-table
+            info-four
+        "
+
+        style="
+            margin-top: 7px;
+        "
+    >
+
+
+        <tr>
+
+
+            <td>
+
+                <span class="field-label">
+
+                    Transport Type
+
+                </span>
+
+
+                <span class="field-value">
+
+                    {{ ticket['transport_type'] }}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <span class="field-label">
+
+                    Operator
+
+                </span>
+
+
+                <span class="field-value">
+
+                    {{ ticket['operator'] }}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <span class="field-label">
+
+                    Payment Method
+
+                </span>
+
+
+                <span class="field-value">
+
+                    {{ ticket['payment_method'] }}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <span class="field-label">
+
+                    Payment Type
+
+                </span>
+
+
+                <span class="field-value">
+
+
+                    {% if ticket['payment_type'] == 'partial' %}
+
+                        Partial (50%)
+
+                    {% else %}
+
+                        Full Payment
+
+                    {% endif %}
+
+
+                </span>
+
+            </td>
+
+
+        </tr>
+
+
+    </table>
+
+
+    <!-- ===============================================================
+         5. EXISTING TICKET / SEAT INFORMATION
+         =============================================================== -->
+
+
+    <div class="section-title">
+
+        Ticket Information
+
+    </div>
+
+
+    <div class="ticket-info-box">
+
+        {{ ticket['seat_info'] }}
+
+    </div>
+
+
+    <!-- ===============================================================
+         6. PAYMENT SUMMARY
+         =============================================================== -->
+
+
+    <div class="section-title">
+
+        Payment Summary
+
+    </div>
+
+
+    <table class="fare-table">
+
+
+        <thead>
+
+
+            <tr>
+
+
+                <th>
+
+                    Description
+
+                </th>
+
+
+                <th class="center">
+
+                    Method
+
+                </th>
+
+
+                <th class="right">
+
+                    Amount (BDT)
+
+                </th>
+
+
+            </tr>
+
+
+        </thead>
+
+
+        <tbody>
+
+
+            <!--
+            ------------------------------------------------------------
+            Original fare before Jatra Coin discount
+
+            তোমার database-এ ticket['price'] হচ্ছে discount-এর পরের
+            final payable total.
+
+            আর ticket['used_coins'] হচ্ছে discount.
+
+            তাই:
+
+            Original amount =
+            price + used_coins
+            ------------------------------------------------------------
+            -->
+
+
+            <tr>
+
+
+                <td>
+
+
+                    {{ ticket['transport_type'] }}
+
+                    booking:
+
+                    {{ ticket['departure'] }}
+
+                    to
+
+                    {{ ticket['destination'] }}
+
+
+                    <br>
+
+
+                    <span class="muted">
+
+                        PNR
+
+                        {{ ticket['pnr'] }}
+
+                        &bull;
+
+                        {{ ticket['operator'] }}
+
+                    </span>
+
+
+                </td>
+
+
+                <td class="center">
+
+                    {{ ticket['payment_method'] }}
+
+                </td>
+
+
+                <td class="right">
+
+                    {{ ticket['price'] + ticket['used_coins'] }}
+
+                </td>
+
+
+            </tr>
+
+
+            <!-- =======================================================
+                 JATRA COIN DISCOUNT
+                 শুধুমাত্র যদি coins use করা হয়
+                 ======================================================= -->
+
+
+            {% if ticket['used_coins'] > 0 %}
+
+
+                <tr>
+
+
+                    <td
+                        colspan="2"
+                        class="summary-label"
+                    >
+
+                        Jatra Coins Discount
+
+                    </td>
+
+
+                    <td
+                        class="
+                            right
+                            discount-value
+                        "
+                    >
+
+                        -
+
+                        {{ ticket['used_coins'] }}
+
+                    </td>
+
+
+                </tr>
+
+
+            {% endif %}
+
+
+            <!-- =======================================================
+                 NET BOOKING FARE
+                 ======================================================= -->
+
+
+            <tr>
+
+
+                <td
+                    colspan="2"
+                    class="summary-label"
+                >
+
+                    Net Booking Fare
+
+                </td>
+
+
+                <td class="right">
+
+                    <strong>
+
+                        {{ ticket['price'] }}
+
+                    </strong>
+
+                </td>
+
+
+            </tr>
+
+
+            <!-- =======================================================
+                 AMOUNT PAID
+                 ======================================================= -->
+
+
+            <tr>
+
+
+                <td
+                    colspan="2"
+                    class="summary-label"
+                >
+
+                    Amount Paid
+
+                </td>
+
+
+                <td
+                    class="
+                        right
+                        paid-value
+                    "
+                >
+
+                    {{ ticket['price'] - ticket['due_amount'] }}
+
+                </td>
+
+
+            </tr>
+
+
+            <!-- =======================================================
+                 DUE AMOUNT
+                 ======================================================= -->
+
+
+            <tr class="grand-row">
+
+
+                <td
+                    colspan="2"
+                    class="summary-label"
+                >
+
+                    Outstanding / Due
+
+                </td>
+
+
+                <td
+                    class="
+                        right
+                        due-value
+                    "
+                >
+
+                    {{ ticket['due_amount'] }}
+
+                </td>
+
+
+            </tr>
+
+
+        </tbody>
+
+
+    </table>
+
+
+    <!-- ===============================================================
+         BOOKING STATUS + REWARD
+         =============================================================== -->
+
+
+    <table
+        class="info-table"
+
+        style="
+            margin-top: 7px;
+        "
+    >
+
+
+        <tr>
+
+
+            <td
+                style="
+                    width: 50%;
+                "
+            >
+
+
+                <span class="field-label">
+
+                    Booking Status
+
+                </span>
+
+
+                <span class="field-value">
+
+                    {{ ticket['status'] }}
+
+                </span>
+
+
+            </td>
+
+
+            <td
+                style="
+                    width: 50%;
+                "
+            >
+
+
+                <span class="field-label">
+
+                    Jatra Coins Earned From This Payment
+
+                </span>
+
+
+                <span class="field-value">
+
+                    {{ ticket['earned_coins'] }}
+
+                    Coins
+
+                </span>
+
+
+            </td>
+
+
+        </tr>
+
+
+    </table>
+
+
+    <!-- ===============================================================
+         7. TERMS + REAL QR VERIFICATION
+         =============================================================== -->
+
+
+    <table class="footer-table">
+
+
+        <tr>
+
+
+            <td class="footer-left">
+
+
+                <div class="terms-title">
+
+                    Important Travel Information
+
+                </div>
+
+
+                <ol class="terms">
+
+
+                    <li>
+
+                        Please report to the boarding point at least
+                        30 minutes before the scheduled departure time.
+
+                    </li>
+
+
+                    <li>
+
+                        If this booking has an outstanding amount,
+                        the due must be cleared before boarding.
+
+                    </li>
+
+
+                    <li>
+
+                        Keep the PNR and this invoice available
+                        for booking verification when requested.
+
+                    </li>
+
+
+                    <li>
+
+                        Cancellation/refund eligibility follows
+                        the cancellation rules implemented
+                        in Jatra App BD.
+
+                    </li>
+
+
+                    <li>
+
+                        Actual transport operation, delay and boarding
+                        procedures remain subject to the respective operator.
+
+                    </li>
+
+
+                </ol>
+
+
+            </td>
+
+
+            <td class="footer-right">
+
+
+                <!-- ===================================================
+                     REAL QR CODE
+
+                     এই QR backend-এর app.py থেকে Base64 হিসেবে আসবে।
+                     Scan করলে /e_ticket/<pnr> verification page খুলবে।
+                     =================================================== -->
+
+
+                <div class="qr-wrap">
+
+
+                    <img
+
+                        src="
+                            data:image/png;base64,{{ qr_code }}
+                        "
+
+                        alt="
+                            Ticket Verification QR Code
+                        "
+                    >
+
+
+                    <div class="qr-caption">
+
+                        SCAN TO VERIFY BOOKING
+
+                    </div>
+
+
+                    <div class="qr-subtext">
+
+                        Secure PNR verification
+
+                        <br>
+
+                        {{ ticket['pnr'] }}
+
+                    </div>
+
+
+                </div>
+
+
+            </td>
+
+
+        </tr>
+
+
+    </table>
+
+
+    <!-- ===============================================================
+         8. COMPUTER GENERATED FOOTER
+         =============================================================== -->
+
+
+    <div class="document-footer">
+
+
+        This is a computer-generated booking document
+        and does not require a physical signature.
+
+
+        <br>
+
+
+        <strong>
+
+            Jatra App BD
+
+        </strong>
+
+
+        &bull;
+
+
+        Smart Multi-Transport Ticket Booking
+        &amp; Management System
+
+
+        <br>
+
+
+        Booking Reference:
+
+
+        <strong>
+
+            {{ ticket['pnr'] }}
+
+        </strong>
+
+
+        &bull;
+
+
+        Generated:
+
+
+        {{ current_time }}
+
+
+        <div class="platform-note">
+
+            QR verification opens the corresponding
+            Jatra App BD e-ticket verification page.
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>

@@ -1,0 +1,150 @@
+/* =========================================
+   🌟 ULTRA-PREMIUM CORPORATE BACKGROUND
+   ========================================= */
+body {
+    margin: 0; padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #2c3e50;
+    background-color: #f8f9fa;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* 1. Moving Aurora / Mesh Gradient Background */
+.premium-bg {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -2;
+    background: linear-gradient(120deg, #e0f2f1, #e8f5e9, #f8d7da, #e2e3f5);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* 2. Floating Abstract Orbs for Depth */
+.orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    z-index: -1;
+    opacity: 0.6;
+    animation: floatOrb 20s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+}
+.orb-1 { width: 50vw; height: 50vw; background: #198754; top: -10%; left: -10%; }
+.orb-2 { width: 45vw; height: 45vw; background: #0b5ed7; bottom: -10%; right: -10%; animation-delay: -5s; }
+.orb-3 { width: 35vw; height: 35vw; background: #dc3545; top: 30%; left: 30%; animation-delay: -10s; opacity: 0.4; }
+
+@keyframes floatOrb {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    50% { transform: translate(5vw, 10vh) scale(1.1) rotate(180deg); }
+    100% { transform: translate(-5vw, -5vh) scale(0.9) rotate(360deg); }
+}
+
+/* =========================================
+   🌟 ADVANCED GLASSMORPHISM CARDS
+   ========================================= */
+.shohoz-card {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    padding: 30px;
+    border-top: 5px solid #198754;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.shohoz-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+}
+
+/* =========================================
+   🌟 ULTRA-PREMIUM SHINING LOGO
+   ========================================= */
+.custom-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-size: 28px !important;
+    font-weight: 900;
+    text-transform: uppercase;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+/* Pulsing SVG Icon */
+.logo-icon-svg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #198754, #146c43);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(25, 135, 84, 0.4);
+    animation: pulseShadow 2s infinite;
+}
+
+@keyframes pulseShadow {
+    0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.5); }
+    70% { box-shadow: 0 0 0 15px rgba(25, 135, 84, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
+}
+
+/* Shining Text Effect */
+.logo-text {
+    background: linear-gradient(90deg, #198754, #0b5ed7, #dc3545, #198754);
+    background-size: 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shineText 5s linear infinite;
+}
+
+@keyframes shineText {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+.logo-bd {
+    color: #dc3545;
+    -webkit-text-fill-color: #dc3545;
+    font-size: 32px;
+}
+
+/* =========================================
+   🌟 PREMIUM NAVBAR & COMPONENTS
+   ========================================= */
+.navbar-bd {
+    background-color: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.6);
+}
+.navbar-bd .nav-link { color: #444 !important; font-weight: 700; transition: 0.3s; }
+.navbar-bd .nav-link:hover { color: #198754 !important; transform: translateY(-2px); }
+
+/* Premium Buttons */
+.btn-shohoz { background: linear-gradient(135deg, #198754, #146c43); color: white; font-weight: bold; border: none; padding: 12px 20px; border-radius: 8px; transition: 0.3s; }
+.btn-shohoz:hover { background: linear-gradient(135deg, #146c43, #0f5132); color: white; box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4); transform: translateY(-3px); }
+
+/* Scrolling Discount Banner */
+.discount-banner { background: linear-gradient(90deg, #dc3545, #c82333); color: #fff; padding: 10px 0; font-weight: bold; font-size: 15px; letter-spacing: 1px; box-shadow: 0 2px 10px rgba(220, 53, 69, 0.3); }
+
+/* Refund Box & Inputs */
+.refund-box { background-color: rgba(255, 243, 205, 0.85); border-left: 5px solid #ffc107; padding: 15px; border-radius: 8px; font-size: 13px; color: #856404; margin-top: 15px; backdrop-filter: blur(10px); }
+.form-control, .form-select { border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.9); padding: 10px 15px; }
+.form-control:focus, .form-select:focus { border-color: #198754; box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.15); }
+
+/* Print CSS */
+@media print {
+    body { background: white; }
+    .premium-bg, .orb, .no-print { display: none !important; }
+    .shohoz-card { box-shadow: none; border: 1px solid #ddd; }
+}

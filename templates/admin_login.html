@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="shohoz-card border-top border-danger border-5">
+            <h3 class="text-center text-danger fw-bold mb-4">⚙️ System Admin Login</h3>
+            <form action="/admin_login" method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Admin Email</label>
+                    <input type="email" class="form-control" name="email" value="admin@jatra.com" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Admin Password</label>
+                    <input type="password" class="form-control" name="password" value="admin123" required>
+                </div>
+                <button type="submit" class="btn btn-danger w-100 fw-bold fs-5">Secure Login</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,382 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* 🌟 SHOHOZ STYLE ANIMATED VECTOR BACKGROUND 🌟 */
+    .animated-hero {
+        position: relative;
+        height: 420px;
+        background: linear-gradient(to bottom, #e0f7fa 0%, #b2ebf2 50%, #a5d6a7 100%);
+        overflow: hidden;
+        border-radius: 0 0 30px 30px;
+        text-align: center;
+        padding-top: 60px;
+    }
+
+    .hero-title { position: relative; z-index: 10; font-size: 3rem; font-weight: 900; color: #1b5e20; text-shadow: 2px 2px 4px rgba(255,255,255,0.7); }
+    .hero-subtitle { position: relative; z-index: 10; font-size: 1.2rem; font-weight: 700; color: #2e7d32; }
+
+    /* Vector Elements */
+    .sun {
+        position: absolute; top: 40px; right: 15%; width: 90px; height: 90px;
+        background: #FFD700; border-radius: 50%; box-shadow: 0 0 50px #FFD700;
+        animation: pulseSun 3s infinite alternate; z-index: 1;
+    }
+    .hill-back {
+        position: absolute; bottom: 0; left: -10%; width: 120%; height: 200px;
+        background: #81c784; border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 2;
+    }
+    .hill-front {
+        position: absolute; bottom: 0; left: -5%; width: 110%; height: 130px;
+        background: #4caf50; border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 3;
+        border-top: 5px solid #388e3c;
+    }
+
+    /* Animated Vehicles */
+    .anim-ferris {
+        position: absolute; bottom: 120px; right: 25%; font-size: 90px;
+        animation: spin 15s linear infinite; z-index: 2;
+    }
+    .anim-plane {
+        position: absolute; top: 60px; left: -100px; font-size: 45px;
+        animation: flyPlane 18s linear infinite; z-index: 1;
+    }
+    .anim-train {
+        position: absolute; bottom: 95px; left: -200px; font-size: 40px;
+        animation: moveTrain 14s linear infinite; z-index: 4;
+    }
+    .anim-bus {
+        position: absolute; bottom: 20px; right: -150px; font-size: 45px;
+        transform: scaleX(-1); animation: moveBus 10s linear infinite; z-index: 5;
+    }
+
+    /* Keyframes */
+    @keyframes pulseSun { from { transform: scale(1); opacity: 0.9;} to { transform: scale(1.1); opacity: 1;} }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes flyPlane { 0% { transform: translate(0, 0) scale(1); opacity: 1;} 100% { transform: translate(120vw, -80px) scale(0.8); opacity: 0.5;} }
+    @keyframes moveTrain { 0% { transform: translateX(0); } 100% { transform: translateX(120vw); } }
+    @keyframes moveBus { 0% { transform: translateX(0) scaleX(-1); } 100% { transform: translateX(-120vw) scaleX(-1); } }
+
+    /* Search Box & Inputs */
+    .search-box-container { margin-top: -100px; position: relative; z-index: 10; }
+    .search-card { background: white; border-radius: 16px; box-shadow: 0 12px 35px rgba(0,0,0,0.1); padding: 30px 40px; }
+
+    .transport-tabs input[type="radio"] { display: none; }
+    .transport-tabs label { padding: 10px 25px; cursor: pointer; border-radius: 30px; font-weight: 700; color: #6c757d; transition: 0.3s; border: 2px solid transparent; }
+    .transport-tabs label:hover { background: #f8f9fa; }
+    .transport-tabs input[type="radio"]:checked + label { background: #009943; color: white; box-shadow: 0 4px 12px rgba(0,153,67,0.3); }
+
+    .trip-type-selector { margin-bottom: 20px; padding-bottom: 10px; }
+    .custom-radio { display: flex; align-items: center; cursor: pointer; position: relative; padding-left: 28px; font-size: 15px; user-select: none; }
+    .custom-radio input { position: absolute; opacity: 0; cursor: pointer; }
+    .radio-mark { position: absolute; top: 1px; left: 0; height: 18px; width: 18px; background-color: #fff; border: 2px solid #ced4da; border-radius: 50%; transition: 0.2s; }
+    .custom-radio:hover input ~ .radio-mark { border-color: #009943; }
+    .custom-radio input:checked ~ .radio-mark { border-color: #009943; background-color: #009943; }
+    .radio-mark:after { content: ""; position: absolute; display: none; top: 4px; left: 4px; width: 6px; height: 6px; border-radius: 50%; background: white; }
+    .custom-radio input:checked ~ .radio-mark:after { display: block; }
+
+    .input-group-custom { border: 1px solid #dee2e6; border-radius: 10px; padding: 12px 18px; display: flex; flex-direction: column; background: #fff; transition: 0.3s; height: 100%; }
+    .input-group-custom:hover, .input-group-custom:focus-within { border-color: #009943; box-shadow: 0 0 0 4px rgba(0,153,67,0.1); }
+    .input-group-custom label { font-size: 13px; color: #6c757d; margin-bottom: 2px; font-weight: 700; text-transform: uppercase; }
+    .input-group-custom input { border: none; outline: none; font-size: 18px; font-weight: 700; color: #212529; width: 100%; background: transparent; }
+    .input-group-custom input::placeholder { color: #adb5bd; font-weight: 500; }
+
+    .swap-btn-container { display: flex; align-items: center; justify-content: center; position: relative; }
+    .swap-btn { background: white; border: 1px solid #dee2e6; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.08); position: absolute; z-index: 5; color: #009943; font-size: 18px; transition: 0.3s; }
+    .swap-btn:hover { background: #e8f5e9; transform: scale(1.1); border-color: #009943; }
+
+    .btn-search-huge { background: #009943; color: white; border: none; border-radius: 10px; font-size: 20px; font-weight: 800; padding: 15px; width: 100%; height: 100%; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+    .btn-search-huge:hover { background: #007a35; box-shadow: 0 8px 20px rgba(0,153,67,0.4); transform: translateY(-2px); }
+
+    .dest-card { border-radius: 16px; height: 220px; display: flex; align-items: flex-end; padding: 20px; color: white; text-decoration: none; transition: 0.4s; background-size: cover; background-position: center; position: relative; overflow: hidden; }
+    .dest-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%); }
+    .dest-card h4 { position: relative; z-index: 2; margin: 0; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+</style>
+
+<!-- 🌟 NEW ANIMATED VECTOR HERO 🌟 -->
+<div class="animated-hero">
+    <div class="sun"></div>
+    <div class="anim-plane">✈️</div>
+    <div class="hill-back"></div>
+    <div class="anim-ferris">🎡</div>
+    <div class="anim-train">🚆</div>
+    <div class="hill-front"></div>
+    <div class="anim-bus">🚌</div>
+
+    <div class="container">
+        <h1 class="hero-title">Book Your Next Journey</h1>
+        <p class="hero-subtitle">Bus, Train, Air & Launch tickets in one place.</p>
+    </div>
+</div>
+
+<div class="container search-box-container mb-5">
+    <div class="search-card">
+        <form action="/search_results" method="POST" id="searchForm">
+
+            <div class="d-flex flex-wrap gap-2 mb-3 transport-tabs justify-content-center border-bottom pb-4">
+                <input type="radio" name="transport_type" id="t_compare" value="Compare All" checked>
+                <label for="t_compare">⚖️ Compare All</label>
+                <input type="radio" name="transport_type" id="t_bus" value="Bus">
+                <label for="t_bus">🚍 Bus</label>
+                <input type="radio" name="transport_type" id="t_train" value="Train">
+                <label for="t_train">🚆 Train</label>
+                <input type="radio" name="transport_type" id="t_air" value="Air">
+                <label for="t_air">✈️ Air</label>
+                <input type="radio" name="transport_type" id="t_launch" value="Launch">
+                <label for="t_launch">🚢 Launch</label>
+            </div>
+
+            <div class="trip-type-selector d-flex justify-content-start gap-4">
+                <label class="custom-radio">
+                    <input type="radio" name="trip_mode" value="one_way" checked onchange="toggleTripMode()">
+                    <span class="radio-mark"></span>
+                    <span class="fw-bold text-dark">One Way</span>
+                </label>
+                <label class="custom-radio">
+                    <input type="radio" name="trip_mode" value="round_way" onchange="toggleTripMode()">
+                    <span class="radio-mark"></span>
+                    <span class="fw-bold text-dark">Round Way (Return)</span>
+                </label>
+                <label class="custom-radio">
+                    <input type="radio" name="trip_mode" value="decide_later" onchange="toggleTripMode()">
+                    <span class="radio-mark"></span>
+                    <span class="fw-bold text-dark">Decide Later</span>
+                </label>
+            </div>
+
+            <div class="row g-2 align-items-center position-relative">
+                <div class="col-lg-2 col-md-6">
+                    <div class="input-group-custom">
+                        <label>From</label>
+                        <!-- Added onchange event for validation -->
+                        <input type="text" name="departure" id="departure" placeholder="Enter City" list="city_list" required autocomplete="off" onchange="checkSameCity()">
+                    </div>
+                </div>
+
+                <div class="col-lg-1 d-none d-lg-flex swap-btn-container justify-content-center">
+                    <button type="button" class="swap-btn" onclick="swapLocations()" title="Swap Route">⇄</button>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <div class="input-group-custom">
+                        <label>To</label>
+                        <!-- Added onchange event for validation -->
+                        <input type="text" name="destination" id="destination" placeholder="Enter City" list="city_list" required autocomplete="off" onchange="checkSameCity()">
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <div class="input-group-custom">
+                        <label>Journey Date</label>
+                        <input type="date" name="journey_date" id="journey_date" required>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-6" id="returnDateContainer" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+                    <div class="input-group-custom" style="background: #e8f5e9; border-color: #009943;">
+                        <label class="text-success">Return Date</label>
+                        <input type="date" name="return_date" id="return_date">
+                    </div>
+                </div>
+
+                <div class="col-lg-5 col-md-12" id="searchBtnContainer" style="transition: all 0.3s ease;">
+                    <button type="submit" class="btn-search-huge w-100">SEARCH</button>
+                </div>
+            </div>
+
+            <datalist id="city_list">
+                <option value="Dhaka"><option value="Chittagong"><option value="Sylhet">
+                <option value="Cox's Bazar"><option value="Rajshahi"><option value="Khulna">
+                <option value="Barisal"><option value="Mymensingh"><option value="Rangpur">
+                <option value="Kuakata"><option value="Saint Martin"><option value="Bandarban">
+                <option value="Rangamati"><option value="Khagrachari"><option value="Hatiya">
+                <!-- 64 Districts -->
+                <option value="Bagerhat"><option value="Barguna"><option value="Bhola">
+                <option value="Bogra"><option value="Brahmanbaria"><option value="Chandpur">
+                <option value="Chuadanga"><option value="Comilla"><option value="Dinajpur">
+                <option value="Faridpur"><option value="Feni"><option value="Gazipur">
+                <option value="Gopalganj"><option value="Habiganj"><option value="Jamalpur">
+                <option value="Jessore"><option value="Jhalokati"><option value="Jhenaidah">
+                <option value="Joypurhat"><option value="Kishoreganj"><option value="Kurigram">
+                <option value="Kushtia"><option value="Lakshmipur"><option value="Lalmonirhat">
+                <option value="Madaripur"><option value="Magura"><option value="Manikganj">
+                <option value="Meherpur"><option value="Moulvibazar"><option value="Munshiganj">
+                <option value="Naogaon"><option value="Narail"><option value="Narayanganj">
+                <option value="Narsingdi"><option value="Natore"><option value="Nawabganj">
+                <option value="Netrokona"><option value="Nilphamari"><option value="Noakhali">
+                <option value="Pabna"><option value="Panchagarh"><option value="Patuakhali">
+                <option value="Pirojpur"><option value="Rajbari"><option value="Saidpur">
+                <option value="Satkhira"><option value="Shariatpur"><option value="Sherpur">
+                <option value="Sirajganj"><option value="Sunamganj"><option value="Tangail">
+                <option value="Thakurgaon">
+            </datalist>
+
+        </form>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <h3 class="fw-bold text-center text-dark mb-4">Discover Trending Destinations</h3>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="dest-card" style="background: linear-gradient(45deg, #1CB5E0, #000046);">
+                <h4>🌊 Cox's Bazar</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dest-card" style="background: linear-gradient(45deg, #11998e, #38ef7d);">
+                <h4>🍃 Sylhet</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dest-card" style="background: linear-gradient(45deg, #ff9966, #ff5e62);">
+                <h4>⛰️ Bandarban</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if pending_review %}
+    <div class="shohoz-card bg-light border border-warning shadow-sm p-4 mb-5 text-center rounded-4">
+        <h4 class="text-warning fw-bold mb-3">⭐ You have a pending review!</h4>
+        <p class="text-muted mb-3">Please rate your recent journey to earn <strong class="text-success">5 Jatra Coins!</strong></p>
+        <form action="/submit_review" method="POST" class="d-inline-block">
+            <div class="row g-2 align-items-center justify-content-center">
+                <div class="col-auto">
+                    <select name="transport_type" class="form-select border-warning fw-bold" required>
+                        <option value="" disabled selected>Select Transport...</option>
+                        <option value="Bus">Bus</option><option value="Train">Train</option>
+                        <option value="Air">Air</option><option value="Launch">Launch</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <select name="rating" class="form-select border-warning fw-bold text-warning" required>
+                        <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                        <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                        <option value="3">⭐⭐⭐ (3/5)</option>
+                        <option value="2">⭐⭐ (2/5)</option>
+                        <option value="1">⭐ (1/5)</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <input type="text" name="comment" class="form-control border-warning" placeholder="Write your feedback..." required>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-warning text-dark fw-bold px-4">Submit Review</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <h4 class="fw-bold text-center text-dark mb-4">💬 What Our Passengers Say</h4>
+    <div class="row g-4">
+        {% for review in reviews %}
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white ticket-box">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold text-primary m-0">👤 {{ review['user_name'] }}</h6>
+                    <span class="badge bg-light text-dark border">{{ review['transport_type'] }}</span>
+                </div>
+                <div class="text-warning mb-2 fs-5">
+                    {% for _ in range(review['rating']) %}⭐{% endfor %}
+                </div>
+                <p class="text-muted m-0 fst-italic">"{{ review['comment'] }}"</p>
+            </div>
+        </div>
+        {% endfor %}
+        {% if not reviews %}
+        <div class="col-12 text-center text-muted"><p>No reviews yet. Be the first to share your experience!</p></div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        let today = new Date().toISOString().split('T')[0];
+        document.getElementById('journey_date').setAttribute('min', today);
+        document.getElementById('journey_date').value = today;
+    });
+
+    // 🌟 SAME CITY BUG FIX LOGIC 🌟
+    function checkSameCity() {
+        let dep = document.getElementById('departure').value.trim().toLowerCase();
+        let dest = document.getElementById('destination').value.trim().toLowerCase();
+
+        if (dep !== "" && dest !== "" && dep === dest) {
+            alert("🚨 WARNING: Departure and Destination cannot be the same city!\n\nPlease select a different destination.");
+            document.getElementById('destination').value = ""; // Auto clear the wrong input
+            document.getElementById('destination').focus();
+        }
+    }
+
+    function swapLocations() {
+        let fromInput = document.getElementById('departure');
+        let toInput = document.getElementById('destination');
+        let temp = fromInput.value;
+        fromInput.value = toInput.value;
+        toInput.value = temp;
+
+        let btn = document.querySelector('.swap-btn');
+        btn.style.transform = 'scale(0.8) rotate(180deg)';
+        setTimeout(() => { btn.style.transform = ''; }, 300);
+
+        checkSameCity(); // Check if swapping caused them to be same (rare but safe)
+    }
+
+    function toggleTripMode() {
+        let mode = document.querySelector('input[name="trip_mode"]:checked').value;
+        let returnContainer = document.getElementById('returnDateContainer');
+        let searchBtnContainer = document.getElementById('searchBtnContainer');
+        let returnInput = document.getElementById('return_date');
+
+        if (mode === 'round_way') {
+            returnContainer.style.display = 'block';
+            setTimeout(() => { returnContainer.style.opacity = '1'; }, 10);
+            searchBtnContainer.className = 'col-lg-3 col-md-12';
+            returnInput.required = true;
+
+            let jDate = document.getElementById('journey_date').value;
+            if(jDate) returnInput.setAttribute('min', jDate);
+
+        } else {
+            returnContainer.style.opacity = '0';
+            setTimeout(() => { returnContainer.style.display = 'none'; }, 300);
+            searchBtnContainer.className = 'col-lg-5 col-md-12';
+            returnInput.required = false;
+            returnInput.value = '';
+
+            if (mode === 'decide_later') {
+                alert("💡 Great choice! You can easily book your One-Way ticket now and decide to book a return journey later.");
+            }
+        }
+    }
+
+    document.getElementById('journey_date').addEventListener('change', function() {
+        document.getElementById('return_date').setAttribute('min', this.value);
+        let mode = document.querySelector('input[name="trip_mode"]:checked').value;
+        if(mode === 'round_way' && document.getElementById('return_date').value < this.value) {
+            document.getElementById('return_date').value = this.value;
+        }
+    });
+
+    // 🌟 EXTRA SECURITY: INTERCEPT FORM SUBMISSION 🌟
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+        let dep = document.getElementById('departure').value.trim().toLowerCase();
+        let dest = document.getElementById('destination').value.trim().toLowerCase();
+
+        if (dep === dest) {
+            e.preventDefault(); // Stop form submission completely
+            alert("🚨 ERROR: Departure and Destination cannot be the same city! Please fix it before searching.");
+            return false;
+        }
+
+        let mode = document.querySelector('input[name="trip_mode"]:checked').value;
+        if (mode === 'round_way') {
+            let retDate = document.getElementById('return_date').value;
+            alert(`✅ ONWARD JOURNEY SEARCH INITIATED!\n\nPlease book your Onward ticket first.\nYour Return Journey for ${retDate} has been saved in the system. You will be prompted to book it after this checkout is complete!`);
+        }
+    });
+</script>
+{% endblock %}

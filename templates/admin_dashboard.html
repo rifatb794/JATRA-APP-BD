@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jatra App BD - Ultimate Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { height: 100vh; background: #1a202c; color: white; padding-top: 20px; position: fixed; width: 250px;}
+        .sidebar a { color: #a0aec0; text-decoration: none; padding: 15px 20px; display: block; font-weight: 600; border-left: 4px solid transparent;}
+        .sidebar a:hover, .sidebar a.active { background: #2d3748; color: #fff; border-left: 4px solid #48bb78; }
+        .main-content { margin-left: 250px; padding: 30px; }
+        .stat-card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-bottom: 4px solid #48bb78;}
+        .table-wrapper { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 30px;}
+        .btn-shohoz { background-color: #009943; color: white; font-weight: bold; }
+        .btn-shohoz:hover { background-color: #007a35; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h4 class="text-center text-success fw-bold mb-4">👑 Jatra Admin</h4>
+        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+            <a class="nav-link active" id="v-pills-dashboard-tab" data-bs-toggle="pill" href="#v-pills-dashboard" role="tab"><span class="me-2">📊</span> Overview</a>
+            <a class="nav-link" id="v-pills-trips-tab" data-bs-toggle="pill" href="#v-pills-trips" role="tab"><span class="me-2">🚍</span> Manage Trips</a>
+            <a class="nav-link" id="v-pills-tickets-tab" data-bs-toggle="pill" href="#v-pills-tickets" role="tab"><span class="me-2">🎟️</span> All Bookings</a>
+            <a class="nav-link" id="v-pills-operators-tab" data-bs-toggle="pill" href="#v-pills-operators" role="tab"><span class="me-2">🏢</span> Operators</a>
+            <a class="nav-link" id="v-pills-reviews-tab" data-bs-toggle="pill" href="#v-pills-reviews" role="tab"><span class="me-2">⭐</span> Moderation</a>
+            <a class="nav-link text-danger mt-5" href="/admin_logout"><span class="me-2">🚪</span> Logout</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        <strong>Alert:</strong> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="tab-content" id="v-pills-tabContent">
+
+            <div class="tab-pane fade show active" id="v-pills-dashboard" role="tabpanel">
+                <h2 class="fw-bold text-dark mb-4">Financial & Analytics Sandbox</h2>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stat-card" style="border-bottom-color: #0d6efd;">
+                            <h6 class="text-muted text-uppercase fw-bold">Total Revenue</h6>
+                            <h2 class="fw-bold text-primary">৳ {{ total_revenue }}</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card" style="border-bottom-color: #198754;">
+                            <h6 class="text-muted text-uppercase fw-bold">Total Tickets Sold</h6>
+                            <h2 class="fw-bold text-success">{{ total_tickets }}</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card" style="border-bottom-color: #ffc107;">
+                            <h6 class="text-muted text-uppercase fw-bold">Registered Users</h6>
+                            <h2 class="fw-bold text-warning">{{ total_users }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-trips" role="tabpanel">
+                <h2 class="fw-bold text-dark mb-4">Dynamic Trip & Route Control</h2>
+
+                <div class="table-wrapper mb-4 border border-success">
+                    <h5 class="fw-bold text-success border-bottom pb-2">➕ Add New Transport Schedule</h5>
+                    <form action="/admin_add_trip" method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-2">
+                                <select name="type" class="form-select fw-bold" required>
+                                    <option value="Bus">Bus</option><option value="Train">Train</option>
+                                    <option value="Air">Air</option><option value="Launch">Launch</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3"><input type="text" name="operator" class="form-control" placeholder="Operator Name (e.g. Green Line)" required></div>
+                            <div class="col-md-2"><input type="text" name="dep" class="form-control" placeholder="From (e.g. Dhaka)" required></div>
+                            <div class="col-md-2"><input type="text" name="dest" class="form-control" placeholder="To (e.g. Sylhet)" required></div>
+                            <div class="col-md-3"><input type="text" name="time" class="form-control" placeholder="Time (e.g. 10:30 AM)" required></div>
+
+                            <div class="col-md-2"><input type="number" name="price" class="form-control" placeholder="Price (৳)" required></div>
+                            <div class="col-md-3"><input type="text" name="duration" class="form-control" placeholder="Duration String (e.g. 5h 30m)" required></div>
+                            <div class="col-md-2"><input type="number" name="dur_mins" class="form-control" placeholder="Total Mins (e.g. 330)" required></div>
+                            <div class="col-md-2"><input type="number" name="seats" class="form-control" placeholder="Total Seats" required></div>
+                            <div class="col-md-3"><button type="submit" class="btn btn-shohoz w-100">Deploy Trip to Live Website</button></div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-wrapper">
+                    <h5 class="fw-bold text-dark mb-3">Live Active Trips Database</h5>
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Type</th><th>Operator</th><th>Route</th><th>Time</th><th>Price</th><th>Seats</th><th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in trips %}
+                            <tr>
+                                <td><span class="badge bg-secondary">{{ t['transport_type'] }}</span></td>
+                                <td class="fw-bold text-primary">{{ t['operator'] }}</td>
+                                <td>{{ t['departure'] }} ➡️ {{ t['destination'] }}</td>
+                                <td class="text-danger fw-bold">{{ t['dep_time'] }}</td>
+                                <td class="text-success fw-bold">৳{{ t['price'] }}</td>
+                                <td>{{ t['seats_available'] }}</td>
+                                <td><a href="/admin_delete_trip/{{ t['id'] }}" class="btn btn-sm btn-danger fw-bold">Remove</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-tickets" role="tabpanel">
+                <h2 class="fw-bold text-dark mb-4">Customer Booking Authority</h2>
+                <div class="table-wrapper">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>PNR</th><th>Passenger</th><th>Route</th><th>Date & Time</th><th>Status</th><th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in tickets %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ t['pnr'] }}</td>
+                                <td>{{ t['passenger_name'] }}</td>
+                                <td>{{ t['departure'] }} ➡️ {{ t['destination'] }} <br><small class="text-muted">{{ t['transport_type'] }} - {{ t['operator'] }}</small></td>
+                                <td>{{ t['journey_date'] }} <br><span class="text-danger fw-bold">{{ t['dep_time'] }}</span></td>
+                                <td>
+                                    {% if 'Confirmed' in t['status'] %} <span class="badge bg-success">Confirmed</span>
+                                    {% else %} <span class="badge bg-danger">{{ t['status'] }}</span> {% endif %}
+                                </td>
+                                <td>
+                                    {% if 'Confirmed' in t['status'] %}
+                                    <a href="/admin_cancel_ticket/{{ t['pnr'] }}" class="btn btn-sm btn-outline-danger fw-bold">Force Cancel</a>
+                                    {% else %} - {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-operators" role="tabpanel">
+                <h2 class="fw-bold text-dark mb-4">Operator Accounts Management</h2>
+
+                <div class="table-wrapper mb-4 border border-primary">
+                    <h5 class="fw-bold text-primary border-bottom pb-2">➕ Create New Operator Account</h5>
+                    <form action="/admin_add_operator" method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" name="company_name" class="form-control border-primary" placeholder="Company Name (e.g. Green Line)" required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="email" name="email" class="form-control border-primary" placeholder="Login Email" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="password" name="password" class="form-control border-primary" placeholder="Set Password" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">Add Account</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-wrapper">
+                    <h5 class="fw-bold text-dark mb-3">Registered Transport Companies</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Company Name</th>
+                                    <th>Login Email</th>
+                                    <th>Security Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for op in operators_list %}
+                                <tr>
+                                    <td class="fw-bold text-muted">#{{ op['id'] }}</td>
+                                    <td class="fw-bold text-primary">{{ op['company_name'] }}</td>
+                                    <td>{{ op['email'] }}</td>
+                                    <td><span class="badge bg-success">Active / Encrypted</span></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted fw-bold">No operators registered yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-reviews" role="tabpanel">
+                <h2 class="fw-bold text-dark mb-4">Public Review Moderation</h2>
+                <div class="table-wrapper">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>User</th><th>Transport</th><th>Rating</th><th>Comment</th><th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in reviews %}
+                            <tr>
+                                <td class="fw-bold">{{ r['user_name'] }}</td>
+                                <td><span class="badge bg-secondary">{{ r['transport_type'] }}</span></td>
+                                <td class="text-warning">{% for i in range(r['rating']) %}⭐{% endfor %}</td>
+                                <td>"{{ r['comment'] }}"</td>
+                                <td><a href="/admin_delete_review/{{ r['id'] }}" class="btn btn-sm btn-danger fw-bold">Delete Post</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

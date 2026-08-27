@@ -1,0 +1,516 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .checkout-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 25px; margin-bottom: 25px; }
+    .seat-grid { display: grid; gap: 10px; margin-top: 20px; overflow-x: auto; padding-bottom: 10px; }
+    .seat { padding: 12px 2px; text-align: center; border: 2px solid #28a745; border-radius: 8px; cursor: pointer; font-weight: bold; color: #28a745; transition: 0.3s; font-size: 12px; }
+    .seat:hover { background: #e8f5e9; }
+    .seat.selected { background: #28a745; color: white; }
+    .seat.booked { background: #dc3545; border-color: #dc3545; color: white; cursor: not-allowed; opacity: 0.6; }
+    .steering { text-align: right; font-size: 24px; padding-bottom: 10px; border-bottom: 2px solid #dee2e6; margin-bottom: 10px; }
+
+    .summary-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 600; color: #495057; }
+    .summary-total { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #dee2e6; font-size: 20px; font-weight: 900; color: #198754; }
+
+    .pay-select-wrapper { position: relative; user-select: none; width: 100%; font-weight: bold; }
+    .pay-select { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border: 2px solid #dc3545; border-radius: 6px; background: white; cursor: pointer; transition: 0.2s;}
+    .pay-select:hover { border-color: #b02a37; }
+    .pay-options { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ced4da; border-radius: 6px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); margin-top: 5px; z-index: 100; display: none; overflow: hidden; }
+    .pay-options.open { display: block; animation: fadeIn 0.2s; }
+    .pay-option { padding: 12px 15px; display: flex; align-items: center; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #f1f3f5; }
+    .pay-option:last-child { border-bottom: none; }
+    .pay-option:hover { background: #f8f9fa; color: #dc3545; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+    .gw-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 9999;
+        backdrop-filter: blur(3px);
+    }
+    .gw-box { width: 350px; background: #fff; overflow: hidden; font-family: Arial, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .gw-header { padding: 20px; text-align: center; color: white; position: relative; transition: 0.3s;}
+    .gw-text-logo { margin:0 0 10px 0; font-weight:900; font-size: 32px; font-style:italic; display:none; }
+    .gw-invoice { display: flex; justify-content: space-between; padding: 12px 5px; font-size: 13px; text-align: left; transition: 0.3s;}
+    .gw-body { padding: 30px 20px 40px; text-align: center; color: white; transition: 0.3s;}
+    .gw-body p { font-size: 14px; margin-bottom: 15px; }
+    .gw-input { width: 100%; padding: 12px; border: none; border-radius: 2px; font-size: 16px; text-align: center; margin-bottom: 15px; outline: none; }
+    .gw-input::placeholder { color: #ccc; }
+    .gw-terms { font-size: 11px; opacity: 0.8; }
+    .gw-footer { display: flex; transition: 0.3s;}
+    .gw-btn { flex: 1; padding: 15px; border: none; background: transparent; color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .gw-btn-close { border-right: 1px solid rgba(0,0,0,0.2); }
+    .gw-btn:hover { background: rgba(0,0,0,0.1); }
+    .gw-bottom { background: #fff; padding: 12px; text-align: center; }
+
+    .payment-loader-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.95); display: none; align-items: center; justify-content: center; z-index: 10000;
+        flex-direction: column;
+    }
+    .road-track { width: 250px; height: 50px; border-bottom: 4px dashed #009943; position: relative; margin-bottom: 25px; overflow: hidden; }
+    .transport-vehicle { font-size: 40px; position: absolute; bottom: -5px; left: -50px; animation: driveVehicle 1.5s linear infinite; }
+    @keyframes driveVehicle { 0% { left: -50px; transform: translateY(0); } 50% { transform: translateY(-3px); } 100% { left: 250px; transform: translateY(0); } }
+</style>
+
+<div class="container mt-4 mb-5">
+    <div class="alert alert-warning border-warning shadow-sm fw-bold mb-4" role="alert">
+        ⚠️ Attention: Please complete your checkout process quickly. Unpaid reservations will be automatically cancelled.
+    </div>
+
+    <div class="row">
+        <div class="col-lg-5">
+            <div class="checkout-card">
+                <h4 class="fw-bold text-dark mb-3">💺 Select Your Seats</h4>
+                <div class="d-flex justify-content-between text-muted small mb-3">
+                    <span><div class="d-inline-block bg-success" style="width: 15px; height: 15px; border-radius: 3px;"></div> Selected</span>
+                    <span><div class="d-inline-block bg-white border border-success" style="width: 15px; height: 15px; border-radius: 3px;"></div> Available (<span id="availCount">{{ seats_available }}</span>)</span>
+                    <span><div class="d-inline-block bg-danger" style="width: 15px; height: 15px; border-radius: 3px;"></div> Booked</span>
+                </div>
+
+                <div class="seat-grid" id="seatGrid">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="checkout-card">
+                <h4 class="fw-bold text-dark mb-3">📝 Passenger Details</h4>
+                <form id="checkoutForm" action="/confirm_booking" method="POST">
+
+                    <input type="hidden" name="transport" id="transportTypeVal" value="{{ transport }}">
+                    <input type="hidden" name="operator" value="{{ operator }}">
+                    <input type="hidden" name="frm" value="{{ frm }}">
+                    <input type="hidden" name="to" value="{{ to }}">
+                    <input type="hidden" name="date" value="{{ date }}">
+                    <input type="hidden" name="dep_time" value="{{ dep_time }}">
+                    <input type="hidden" name="price" id="basePrice" value="{{ price }}">
+                    <input type="hidden" name="weather_msg" value="{{ weather_msg }}">
+                    <input type="hidden" name="trip_mode" value="{{ trip_mode }}">
+                    <input type="hidden" name="return_date" value="{{ return_date }}">
+
+                    <input type="hidden" name="selected_seats_input" id="selectedSeatsInput">
+                    <input type="hidden" name="quantity" id="ticketQuantity" value="1">
+
+                    <input type="hidden" name="payment_method" id="paymentMethod" value="bKash">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Full Name</label>
+                            <input type="text" class="form-control" name="passenger_name" value="{{ session['user_name'] }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Mobile Number</label>
+                            <input type="text" class="form-control" name="passenger_phone" id="passengerPhone" placeholder="01XXXXXXXXX" minlength="11" maxlength="11" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Seat Class</label>
+                        <select class="form-select border-info fw-bold" name="class_type" id="classType" onchange="calculateFare()" required>
+                            <option value="Economy Class">Economy Class (-15% Fare)</option>
+                            <option value="Standard Class" selected>Standard Class (Base Fare)</option>
+                            <option value="Premium Class">Premium Class (+25% Fare)</option>
+                            <option value="VIP / Business">VIP / Business Class (+50% Fare)</option>
+                        </select>
+                    </div>
+
+                    <hr>
+                    <h5 class="fw-bold mt-4 mb-3">💰 Fare Summary</h5>
+                    <div class="p-3 bg-light rounded border">
+                        <div class="summary-item">
+                            <span>Base Fare (<span id="qtyDisplay">1</span>x)</span>
+                            <span>৳<span id="baseFareDisplay">{{ price }}</span></span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Jatra Coins Applied</span>
+                            <span class="text-danger">- ৳<span id="discountDisplay">0</span></span>
+                        </div>
+                        <div class="summary-total">
+                            <span>Total Payable</span>
+                            <span>৳<span id="totalDisplay">{{ price }}</span></span>
+                        </div>
+                    </div>
+
+                    <div class="form-check mt-3">
+                        <input class="form-check-input border-success" type="checkbox" name="use_coins" value="yes" id="useCoins" onchange="calculateFare()">
+                        <label class="form-check-label fw-bold text-success" for="useCoins">
+                            Use Jatra Coins Balance (🪙 {{ session.get('coins', 0) }} Available)
+                        </label>
+                    </div>
+
+                    <hr>
+                    <h5 class="fw-bold mt-4 mb-3">💳 Payment Method</h5>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Payment Plan</label>
+                        <select class="form-select fw-bold border-primary" name="payment_type" id="paymentType" onchange="calculateFare()">
+                            <option value="full">Pay in Full (100%)</option>
+                            <option value="partial">Reserve Ticket (Pay 50% Now)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Select Gateway</label>
+                        <div class="pay-select-wrapper" id="paySelectWrapper">
+                            <div class="pay-select" onclick="togglePayOptions()">
+                                <div class="d-flex align-items-center">
+                                    <span id="selectedPayIcon">
+                                        <svg viewBox="0 0 100 40" style="height:26px; width:45px; margin-right:12px;"><rect width="100" height="40" rx="8" fill="#E2136E"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" font-size="20">bKash</text></svg>
+                                    </span>
+                                    <span id="selectedPayText">bKash Mobile Menu</span>
+                                </div>
+                                <span class="text-danger">▼</span>
+                            </div>
+
+                            <div class="pay-options" id="payOptions">
+                                <div class="pay-option" onclick="selectPayOption('bKash', 'bKash Mobile Menu', `<svg viewBox='0 0 100 40' style='height:26px; width:45px; margin-right:12px;'><rect width='100' height='40' rx='8' fill='#E2136E'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold' font-size='20'>bKash</text></svg>`)">
+                                    <svg viewBox="0 0 100 40" style="height:26px; width:45px; margin-right:12px;"><rect width="100" height="40" rx="8" fill="#E2136E"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" font-size="20">bKash</text></svg> bKash Mobile Menu
+                                </div>
+                                <div class="pay-option" onclick="selectPayOption('Nagad', 'Nagad', `<svg viewBox='0 0 100 40' style='height:26px; width:45px; margin-right:12px;'><rect width='100' height='40' rx='8' fill='#ED3833'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold' font-size='20'>Nagad</text></svg>`)">
+                                    <svg viewBox="0 0 100 40" style="height:26px; width:45px; margin-right:12px;"><rect width="100" height="40" rx="8" fill="#ED3833"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" font-size="20">Nagad</text></svg> Nagad
+                                </div>
+                                <div class="pay-option" onclick="selectPayOption('Rocket', 'Rocket', `<svg viewBox='0 0 100 40' style='height:26px; width:45px; margin-right:12px;'><rect width='100' height='40' rx='8' fill='#8C3494'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold' font-size='18'>Rocket</text></svg>`)">
+                                    <svg viewBox="0 0 100 40" style="height:26px; width:45px; margin-right:12px;"><rect width="100" height="40" rx="8" fill="#8C3494"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" font-size="18">Rocket</text></svg> Rocket
+                                </div>
+                                <div class="pay-option" onclick="selectPayOption('Visa', 'Visa Card', `<svg viewBox='0 0 100 40' style='height:26px; width:45px; margin-right:12px;'><rect width='100' height='40' rx='8' fill='#1A1F71'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold' font-style='italic' font-size='22'>VISA</text></svg>`)">
+                                    <svg viewBox="0 0 100 40" style="height:26px; width:45px; margin-right:12px;"><rect width="100" height="40" rx="8" fill="#1A1F71"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" font-style="italic" font-size="22">VISA</text></svg> Visa Card
+                                </div>
+                                <div class="pay-option" onclick="selectPayOption('Mastercard', 'Mastercard', `<svg viewBox='0 0 100 40' style='height:26px; width:45px; margin-right:12px;'><rect width='100' height='40' rx='8' fill='#f8f9fa' stroke='#ced4da'/><circle cx='35' cy='20' r='14' fill='#EB001B'/><circle cx='65' cy='20' r='14' fill='#F79E1B' opacity='0.9'/></svg>`)">
+                                    <svg viewBox="0 0 100 40" style="height:26px; width:45px; margin-right:12px;"><rect width="100" height="40" rx="8" fill="#f8f9fa" stroke="#ced4da"/><circle cx="35" cy="20" r="14" fill="#EB001B"/><circle cx="65" cy="20" r="14" fill="#F79E1B" opacity="0.9"/></svg> Mastercard
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info border-info mt-4 mb-4 shadow-sm" role="alert">
+                        <h6 class="fw-bold text-dark border-bottom border-info pb-2">🇧🇩 BRTA Official Refund Policy</h6>
+                        <ul class="mb-0 small text-dark" style="padding-left: 15px;">
+                            <li><strong>48 Hours before departure:</strong> 90% Refund</li>
+                            <li><strong>24 to 48 Hours before:</strong> 50% Refund</li>
+                            <li><strong>12 to 24 Hours before:</strong> 25% Refund</li>
+                            <li><strong>Less than 12 Hours:</strong> 0% (No Refund)</li>
+                        </ul>
+                    </div>
+
+                    <button type="button" class="btn btn-success w-100 py-3 fw-bolder fs-5 shadow" onclick="initiatePayment()">CONFIRM TICKET</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="payment-loader-overlay" id="paymentLoader">
+    <div class="road-track">
+        <div class="transport-vehicle" id="loaderVehicle">🚌</div>
+    </div>
+    <h4 class="fw-bold text-dark" id="loaderText">Connecting to Secure Gateway...</h4>
+    <p class="text-muted small fw-bold mt-2">Please wait, your journey is starting soon! 🛣️</p>
+</div>
+
+<div class="gw-overlay" id="gatewayModal">
+    <div class="gw-box">
+        <div class="gw-header" id="gwHeader">
+            <h2 id="gwTextLogo" class="gw-text-logo">LOGO</h2>
+
+            <div class="gw-invoice" id="gwInvoiceBorder">
+                <div>
+                    <div>Jatra App BD</div>
+                    <div>Invoice: JATRA-{{ range(1000, 9999) | random }}</div>
+                </div>
+                <div class="text-end fw-bold" style="font-size: 16px;">৳<span id="gwPayAmount">0</span></div>
+            </div>
+        </div>
+        <div class="gw-body" id="gwBody">
+            <p id="gwTitle">Account Number</p>
+            <input type="text" id="gwInput" class="gw-input" autocomplete="off">
+            <p class="gw-terms">By clicking on Proceed, you agree to the terms and conditions.</p>
+        </div>
+        <div class="gw-footer" id="gwFooter">
+            <button class="gw-btn gw-btn-close" type="button" onclick="closeGateway()">CLOSE</button>
+            <button class="gw-btn" type="button" onclick="processGatewayStep()">PROCEED</button>
+        </div>
+        <div class="gw-bottom">
+            <span id="gwNameLabel" style="font-weight:900; font-size:20px; font-style:italic;">Gateway</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let tType = document.getElementById('transportTypeVal').value;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        let vehicleIcon = "🚌";
+        if (tType === "Train") vehicleIcon = "🚂";
+        else if (tType === "Air") vehicleIcon = "✈️";
+        else if (tType === "Launch") vehicleIcon = "🚢";
+
+        document.getElementById('loaderVehicle').innerText = vehicleIcon;
+    });
+
+    function togglePayOptions() {
+        document.getElementById('payOptions').classList.toggle('open');
+    }
+
+    function selectPayOption(value, text, svgCode) {
+        document.getElementById('paymentMethod').value = value;
+        document.getElementById('selectedPayText').innerText = text;
+        document.getElementById('selectedPayIcon').innerHTML = svgCode;
+        document.getElementById('payOptions').classList.remove('open');
+    }
+
+    document.addEventListener('click', function(event) {
+        var wrapper = document.getElementById('paySelectWrapper');
+        if (!wrapper.contains(event.target)) {
+            document.getElementById('payOptions').classList.remove('open');
+        }
+    });
+
+    // 🟢 DYNAMIC TRANSPORT SEAT MAP LOGIC 🟢
+    let bookedSeats = JSON.parse('{{ booked_seats_json | safe }}');
+
+    // 🟢 FIX 2: Safely parse DB Available so '0' doesn't become 40
+    const dbAvailableRaw = parseInt('{{ seats_available }}', 10);
+    const dbAvailable = isNaN(dbAvailableRaw) ? 40 : dbAvailableRaw;
+
+    const seatGrid = document.getElementById('seatGrid');
+
+    let totalSeatsNum = 40;
+    let allSeats = [];
+    let steeringIcon = '🧭';
+
+    let gridColsCSS = '';
+    let spanCount = 0;
+
+    if (tType === "Air") {
+        totalSeatsNum = 60;
+        steeringIcon = '✈️';
+        gridColsCSS = '1fr 1fr 1fr 0.5fr 1fr 1fr 1fr';
+        spanCount = 7;
+        for (let i = 1; i <= 10; i++) {
+            ['A', 'B', 'C', 'D', 'E', 'F'].forEach(c => allSeats.push(i + c));
+        }
+    } else if (tType === "Train") {
+        totalSeatsNum = 40;
+        steeringIcon = '🚂';
+        gridColsCSS = '1fr 1fr 0.5fr 1fr 1fr';
+        spanCount = 5;
+        for (let i = 1; i <= 40; i++) {
+            allSeats.push('T' + i);
+        }
+    } else if (tType === "Launch") {
+        totalSeatsNum = 40;
+        steeringIcon = '🚢';
+        gridColsCSS = '1fr 1fr 0.5fr 1fr 1fr';
+        spanCount = 5;
+        for (let i = 101; i <= 140; i++) {
+            allSeats.push('C' + i);
+        }
+    } else {
+        totalSeatsNum = 40;
+        steeringIcon = '🧭';
+        gridColsCSS = '1fr 1fr 0.5fr 1fr 1fr';
+        spanCount = 5;
+        ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'].forEach(row => {
+            for(let i=1; i<=4; i++) allSeats.push(row + i);
+        });
+    }
+
+    seatGrid.style.gridTemplateColumns = gridColsCSS;
+    seatGrid.innerHTML = `<div class="steering" style="grid-column: span ${spanCount};">${steeringIcon}</div>`;
+
+    let expectedBooked = totalSeatsNum - dbAvailable;
+    if(expectedBooked < 0) expectedBooked = 0;
+
+    if(bookedSeats.length < expectedBooked) {
+        let needed = expectedBooked - bookedSeats.length;
+        let availableToDummy = allSeats.filter(s => !bookedSeats.includes(s));
+
+        availableToDummy.sort(() => 0.5 - Math.random());
+        let dummies = availableToDummy.slice(0, needed);
+        bookedSeats = bookedSeats.concat(dummies);
+    }
+
+    document.getElementById('availCount').innerText = totalSeatsNum - bookedSeats.length;
+
+    const originalBasePrice = parseInt('{{ price }}');
+    const userCoins = parseInt('{{ session.get("coins", 0) }}');
+    let selectedSeats = [];
+
+    let colCount = 0;
+    allSeats.forEach(seatNo => {
+        let div = document.createElement('div');
+        div.className = 'seat';
+        div.innerText = seatNo;
+
+        if(bookedSeats.includes(seatNo)) {
+            div.classList.add('booked');
+        } else {
+            div.onclick = () => toggleSeat(div, seatNo);
+        }
+        seatGrid.appendChild(div);
+
+        colCount++;
+
+        if (tType === "Air" && colCount === 3) {
+            seatGrid.appendChild(document.createElement('div'));
+        } else if (tType !== "Air" && colCount === 2) {
+            seatGrid.appendChild(document.createElement('div'));
+        }
+
+        if ((tType === "Air" && colCount === 6) || (tType !== "Air" && colCount === 4)) {
+            colCount = 0;
+        }
+    });
+
+    function toggleSeat(elem, seatNo) {
+        if(selectedSeats.includes(seatNo)) {
+            selectedSeats = selectedSeats.filter(s => s !== seatNo);
+            elem.classList.remove('selected');
+        } else {
+            if(selectedSeats.length >= 4) return alert("You can select maximum 4 seats at a time.");
+            selectedSeats.push(seatNo);
+            elem.classList.add('selected');
+        }
+        document.getElementById('selectedSeatsInput').value = selectedSeats.join(', ');
+        calculateFare();
+    }
+
+    function calculateFare() {
+        let qty = selectedSeats.length > 0 ? selectedSeats.length : 1;
+        document.getElementById('ticketQuantity').value = qty;
+        document.getElementById('qtyDisplay').innerText = qty;
+
+        let selectedClass = document.getElementById('classType').value;
+        let multiplier = 1.0;
+
+        if (selectedClass === "Economy Class") multiplier = 0.85;
+        else if (selectedClass === "Premium Class") multiplier = 1.25;
+        else if (selectedClass === "VIP / Business") multiplier = 1.50;
+
+        let calculatedUnitPrice = Math.round(originalBasePrice * multiplier);
+        document.getElementById('basePrice').value = calculatedUnitPrice;
+
+        let subTotal = calculatedUnitPrice * qty;
+        document.getElementById('baseFareDisplay').innerText = subTotal;
+
+        let discount = 0;
+        if(document.getElementById('useCoins').checked) {
+            discount = userCoins > subTotal ? subTotal : userCoins;
+        }
+        document.getElementById('discountDisplay').innerText = discount;
+
+        let payable = subTotal - discount;
+
+        if(document.getElementById('paymentType').value === 'partial') {
+            payable = Math.floor(payable * 0.50);
+        }
+
+        document.getElementById('totalDisplay').innerText = payable;
+        document.getElementById('gwPayAmount').innerText = payable;
+    }
+
+    let currentStep = 1;
+    let currentTheme = {};
+
+    const gatewayThemes = {
+        'bKash': {
+            mainColor: '#E2136E', darkColor: '#CA0B5F', border: '#F06A9C', nameLabel: 'bKash', logoString: 'bKash',
+            title1: 'Your bKash account number', place1: 'e.g 01XXXXXXXXX', title2: 'Enter bKash Verification Code', title3: 'Enter bKash PIN'
+        },
+        'Nagad': {
+            mainColor: '#ED3833', darkColor: '#C1272D', border: '#F76B68', nameLabel: 'Nagad', logoString: 'নগদ',
+            title1: 'Your Nagad account number', place1: 'e.g 01XXXXXXXXX', title2: 'Enter Nagad Verification Code', title3: 'Enter Nagad PIN'
+        },
+        'Rocket': {
+            mainColor: '#8C3494', darkColor: '#6a2670', border: '#a544ae', nameLabel: 'Rocket', logoString: 'Rocket',
+            title1: 'Your Rocket account number', place1: 'e.g 01XXXXXXXXX', title2: 'Enter Rocket Verification Code', title3: 'Enter Rocket PIN'
+        },
+        'Visa': {
+            mainColor: '#1A1F71', darkColor: '#101452', border: '#2b3196', nameLabel: 'Visa Secure', logoString: 'VISA',
+            title1: 'Enter Visa Card Number', place1: 'XXXX-XXXX-XXXX-XXXX', title2: 'Enter Bank OTP', title3: 'Enter Card CVV'
+        },
+        'Mastercard': {
+            mainColor: '#EB001B', darkColor: '#b30015', border: '#ff334b', nameLabel: 'Mastercard', logoString: 'Mastercard',
+            title1: 'Enter Mastercard Number', place1: 'XXXX-XXXX-XXXX-XXXX', title2: 'Enter Bank OTP', title3: 'Enter Card CVV'
+        }
+    };
+
+    function initiatePayment() {
+        const checkoutForm = document.getElementById('checkoutForm');
+        if (!checkoutForm.checkValidity()) {
+            checkoutForm.reportValidity();
+            return;
+        }
+
+        if(selectedSeats.length === 0) return alert("Please select at least 1 seat to continue.");
+
+        let selectedMethod = document.getElementById('paymentMethod').value;
+        currentTheme = gatewayThemes[selectedMethod];
+
+        document.getElementById('gwHeader').style.backgroundColor = currentTheme.mainColor;
+        document.getElementById('gwBody').style.backgroundColor = currentTheme.mainColor;
+        document.getElementById('gwFooter').style.backgroundColor = currentTheme.darkColor;
+        document.getElementById('gwInvoiceBorder').style.borderTop = `1px solid ${currentTheme.border}`;
+        document.getElementById('gwInvoiceBorder').style.borderBottom = `1px solid ${currentTheme.border}`;
+        document.getElementById('gwNameLabel').innerText = currentTheme.nameLabel;
+        document.getElementById('gwNameLabel').style.color = currentTheme.mainColor;
+        document.getElementById('gwTextLogo').innerText = currentTheme.logoString;
+        document.getElementById('gwTextLogo').style.display = 'block';
+
+        document.getElementById('loaderText').innerText = `Connecting to Secure ${selectedMethod} Gateway...`;
+        document.getElementById('paymentLoader').style.display = 'flex';
+
+        setTimeout(() => {
+            document.getElementById('paymentLoader').style.display = 'none';
+            document.getElementById('gatewayModal').style.display = 'flex';
+            currentStep = 1;
+            resetGatewayUI(currentTheme.title1, "text", currentTheme.place1);
+        }, 1500);
+    }
+
+    function processGatewayStep() {
+        let inputVal = document.getElementById('gwInput').value;
+
+        if(currentStep === 1) {
+            if(inputVal.length < 11) return alert("Please enter a valid Account/Card number.");
+            resetGatewayUI(currentTheme.title2, "text", "Verification Code / OTP");
+            currentStep = 2;
+        }
+        else if (currentStep === 2) {
+            if(inputVal.length < 4) return alert("Please enter the verification code.");
+            resetGatewayUI(currentTheme.title3, "password", "Enter PIN / CVV");
+            currentStep = 3;
+        }
+        else if (currentStep === 3) {
+            if(inputVal.length < 3) return alert("Please enter a valid PIN.");
+            document.getElementById('gwTitle').innerText = "Payment Successful!";
+            document.getElementById('gwInput').style.display = "none";
+
+            setTimeout(() => {
+                document.getElementById('gatewayModal').style.display = 'none';
+                document.getElementById('loaderText').innerText = "Verifying Payment and Generating Ticket...";
+                document.getElementById('paymentLoader').style.display = 'flex';
+
+                setTimeout(() => {
+                    document.getElementById('checkoutForm').submit();
+                }, 1000);
+            }, 800);
+        }
+    }
+
+    function resetGatewayUI(title, inputType, placeholder) {
+        document.getElementById('gwTitle').innerText = title;
+        let input = document.getElementById('gwInput');
+        input.value = "";
+        input.type = inputType;
+        input.placeholder = placeholder;
+        input.style.display = "block";
+        input.focus();
+    }
+
+    function closeGateway() { document.getElementById('gatewayModal').style.display = 'none'; }
+
+    calculateFare();
+</script>
+{% endblock %}

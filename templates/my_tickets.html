@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-md-10">
+
+        <div class="shohoz-card text-center mb-4 bg-light border-bottom border-success border-4 shadow-sm">
+            <h3 class="text-success fw-bold m-0">🎫 My Bookings & Refunds</h3>
+            <p class="text-muted small mt-1">Manage your active tickets or claim refunds here.</p>
+        </div>
+
+        {% if tickets %}
+            {% for ticket in tickets %}
+            <div class="shohoz-card p-4 mb-4 shadow-sm" style="border-left: 6px solid {% if 'Confirmed' in ticket['status'] or 'Reserved' in ticket['status'] %}#198754{% else %}#dc3545{% endif %};">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                    <h5 class="fw-bold text-dark m-0">{{ ticket['transport_type'] }} - {{ ticket['operator'] }}</h5>
+                    {% if 'Confirmed' in ticket['status'] %}
+                        <span class="badge bg-success fs-6 px-3">✅ {{ ticket['status'] }}</span>
+                    {% elif 'Reserved' in ticket['status'] %}
+                        <span class="badge bg-warning text-dark fs-6 px-3">⏳ {{ ticket['status'] }}</span>
+                    {% else %}
+                        <span class="badge bg-danger fs-6 px-3">🚫 {{ ticket['status'] }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <small class="text-muted d-block fw-bold">PNR NUMBER</small>
+                        <span class="fs-5 text-primary fw-bold">{{ ticket['pnr'] }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block fw-bold">ROUTE</small>
+                        <span class="fs-6 fw-bold">{{ ticket['departure'] }} ➡️ {{ ticket['destination'] }}</span>
+                        {% if 'Cancelled' not in ticket['status'] %}
+                            <br>
+                            <span class="badge {% if ticket.live_status == 'Scheduled' %}bg-secondary{% elif ticket.live_status == 'Boarding Started' %}bg-primary{% elif ticket.live_status == 'On the Way' %}bg-info text-dark{% elif ticket.live_status == 'Delayed' %}bg-danger{% elif ticket.live_status == 'Completed' %}bg-success{% else %}bg-secondary{% endif %} mt-1">
+                                📍 Live: {{ ticket.live_status }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block fw-bold">DATE & TIME</small>
+                        <span class="text-danger fw-bold">{{ ticket['journey_date'] }} | {{ ticket['dep_time'] }}</span>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <small class="text-muted d-block fw-bold">TOTAL FARE</small>
+                        <span class="fs-5 text-success fw-bold">৳ {{ ticket['price'] }}</span>
+                        {% if ticket['due_amount'] > 0 %}
+                            <br><small class="text-danger fw-bold">Due: ৳{{ ticket['due_amount'] }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if 'Confirmed' in ticket['status'] or 'Reserved' in ticket['status'] %}
+                <div class="d-flex justify-content-end border-top pt-3 mt-2">
+                    <form action="/cancel_ticket/{{ ticket['pnr'] }}" method="POST" onsubmit="return confirm('⚠️ WARNING: TICKET CANCELLATION ⚠️\n\nAre you sure you want to cancel this ticket?\n\nBRTA Refund Policy:\n- 48 hrs before: 90% Refund\n- 24-48 hrs before: 50% Refund\n- 12-24 hrs before: 25% Refund\n- Less than 12 hrs: No Refund\n\n* Note: Any Jatra Coins earned from this ticket will be deducted from your account.\n\nPress OK to confirm cancellation.');">
+                        <button type="submit" class="btn btn-danger fw-bold px-4 shadow-sm" style="background-color: #dc3545; border-color: #dc3545; color: white;">
+                            ❌ Cancel Ticket & Claim Refund
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center p-5 bg-white rounded shadow-sm border">
+                <h1 style="font-size: 50px;">🎫</h1>
+                <h4 class="text-muted mt-3">You haven't booked any tickets yet.</h4>
+                <a href="/" class="btn btn-shohoz mt-3 px-4">Book a Journey Now</a>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

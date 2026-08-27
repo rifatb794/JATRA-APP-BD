@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company_name }} - Dashboard | Jatra App BD</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-custom { background-color: #1e3c72; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .navbar-brand { font-weight: 800; letter-spacing: 1px; }
+
+        .stat-card {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 20px;
+            transition: 0.3s;
+            border-left: 5px solid #1e3c72;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+            font-weight: 900;
+            color: #333;
+            margin: 0;
+        }
+
+        .stat-card p {
+            color: #6c757d;
+            font-weight: 600;
+            margin: 0;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-top: 30px;
+        }
+
+        .badge-due {
+            background-color: #ffc107;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .badge-paid {
+            background-color: #198754;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .btn-collect {
+            font-size: 12px;
+            font-weight: bold;
+            background-color: #198754;
+            color: white;
+            border-radius: 5px;
+            padding: 6px 12px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-collect:hover {
+            background-color: #146c43;
+            color: white;
+        }
+
+        /* 🟢 FIX 1: overflow-x removed grid hardcoding, JS will dynamically set it now 🟢 */
+        .seat-grid {
+            display: grid;
+            gap: 8px;
+            margin-top: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        /* 🟢 FIX 2: Adjusted padding and font-size so texts like C101 fit perfectly inside 🟢 */
+        .seat {
+            padding: 10px 2px;
+            text-align: center;
+            border: 2px solid #0d6efd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #0d6efd;
+            transition: 0.3s;
+            font-size: 12px;
+        }
+
+        .seat:hover {
+            background: #e9f2ff;
+        }
+
+        .seat.selected {
+            background: #0d6efd;
+            color: white;
+        }
+
+        .seat.booked {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .steering {
+            text-align: right;
+            font-size: 20px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            🏢 {{ company_name }}
+            <span class="fs-6 text-warning fw-normal ms-2">Operator Portal</span>
+        </a>
+        <div class="d-flex">
+            <a href="/operator_logout" class="btn btn-danger fw-bold rounded-pill px-4 shadow-sm">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} shadow-sm">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h2 class="fw-bolder text-dark">Financial Overview</h2>
+            <p class="text-muted">Real-time statistics & profit tracker for {{ company_name }}</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #0d6efd;">
+                <p>Total Revenue (Paid)</p>
+                <h3 class="text-primary">৳{{ total_revenue }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #dc3545;">
+                <p>Total Expenses</p>
+                <h3 class="text-danger">৳{{ total_expenses }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #198754;">
+                <p>Net Profit (Actual)</p>
+                <h3 class="text-success">৳{{ net_profit }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #ffc107;">
+                <p>Pending Dues</p>
+                <h3 class="text-warning text-dark">৳{{ total_dues }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="table-wrapper border border-primary h-100 mt-0">
+                <h5 class="fw-bold text-primary border-bottom pb-2">📠 POS / Walk-in Booking</h5>
+                <form action="/operator_pos_booking" method="POST" id="posForm">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Select Trip & Route</label>
+                        <select name="trip_id" id="posTripSelect" class="form-select border-primary" required onchange="renderOperatorSeatMap()">
+                            <option value="" data-price="0" data-available="40" data-transport="Bus">-- Choose Active Trip --</option>
+                            {% for trip in operator_trips %}
+                                <option value="{{ trip.id }}" data-price="{{ trip.price }}" data-available="{{ trip.seats_available }}" data-transport="{{ trip.transport_type }}">
+                                    {{ trip.departure }} to {{ trip.destination }} | {{ trip.dep_time }} - [{{ trip.seats_available }} Left]
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="operatorSeatMapContainer" style="display: none;" class="mb-3 p-3 bg-light rounded border border-primary">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold small text-primary mb-0">Select Seats <span id="posSeatCount">(0 Selected)</span></label>
+                            <div class="small fw-bold">
+                                <span class="text-primary me-2">🟦 Selected</span>
+                                <span class="text-danger">🟥 Booked</span>
+                            </div>
+                        </div>
+                        <div class="seat-grid" id="operatorSeatGrid">
+                            <div class="steering">🧭</div>
+                        </div>
+                        <div class="alert alert-success d-flex justify-content-between align-items-center mt-3 mb-0 py-2 shadow-sm">
+                            <span class="fw-bold text-success mb-0">Total Fare:</span>
+                            <span class="fw-bolder fs-5 text-success">৳<span id="posTotalFare">0</span></span>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="selected_seats_input" id="posSelectedSeats">
+                    <input type="hidden" name="quantity" id="posQuantity" value="0">
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Passenger Name</label>
+                            <input type="text" name="passenger_name" class="form-control border-primary" placeholder="Walk-in Customer" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Mobile Number</label>
+                            <input type="text" name="passenger_phone" class="form-control border-primary" placeholder="01XXXXXXXXX" minlength="11" maxlength="11" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm" onclick="return validatePosBooking()">Book Selected Seats & Collect Cash</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="table-wrapper border border-info h-100 mt-0">
+                <h5 class="fw-bold text-info border-bottom pb-2">📡 Broadcast Live Status</h5>
+                <form action="/operator_update_status" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Select Active Trip</label>
+                        <select name="trip_id" class="form-select border-info" required>
+                            <option value="">-- Choose Trip to Update --</option>
+                            {% for trip in operator_trips %}
+                            <option value="{{ trip.id }}">{{ trip.departure }} to {{ trip.destination }} | {{ trip.dep_time }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Update Status To</label>
+                        <select name="live_status" class="form-select border-info" required>
+                            <option value="Scheduled">🗓️ Scheduled</option>
+                            <option value="Boarding Started">📢 Boarding Started</option>
+                            <option value="On the Way">🚌 On the Way</option>
+                            <option value="Delayed">⚠️ Delayed</option>
+                            <option value="Completed">✅ Completed</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-info w-100 fw-bold text-white shadow-sm">Broadcast Update to Passengers</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="table-wrapper border border-success h-100 mt-0">
+                <h5 class="fw-bold text-success border-bottom pb-2">🛣️ Add New {{ op_transport }} Route / Schedule (BD Context)</h5>
+
+                <form action="/operator_add_route" method="POST">
+                    <input type="hidden" id="opTransportType" value="{{ op_transport }}">
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">Departure City</label>
+                            <select name="departure" id="depCity" class="form-select border-success" required onchange="filterDestinationCities()">
+                                <option value="">-- From --</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">Destination City</label>
+                            <select name="destination" id="destCity" class="form-select border-success" required>
+                                <option value="">-- To --</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">Departure Time</label>
+                            <input type="time" name="dep_time" class="form-control border-success" required>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">Base Fare (৳)</label>
+                            <input type="number" name="price" class="form-control border-success" placeholder="e.g. 800" min="1" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Journey Duration String</label>
+                            <input type="text" name="duration" class="form-control border-success" placeholder="e.g. 5h 30m" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Duration in Minutes</label>
+                            <input type="number" name="dur_mins" class="form-control border-success" placeholder="e.g. 330" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Total Seats Available</label>
+                            <input type="number" name="seats_available" id="seatsAvailableInput" class="form-control border-success" value="40" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 fw-bold shadow-sm">➕ Publish New {{ op_transport }} Route Live</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="table-wrapper border border-warning h-100 mt-0">
+                <h5 class="fw-bold text-warning text-dark border-bottom pb-2">📈 Dynamic Surge Pricing</h5>
+                <form action="/operator_update_price" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Select Active Trip</label>
+                        <select name="trip_id" class="form-select border-warning" required>
+                            <option value="">-- Choose Trip --</option>
+                            {% for trip in operator_trips %}
+                            <option value="{{ trip.id }}">{{ trip.departure }} to {{ trip.destination }} | Base: ৳{{ trip.price }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Target Seat Class</label>
+                            <select name="class_type" class="form-select border-warning" required>
+                                <option value="Standard Class">Standard Class (Base Fare)</option>
+                                <option value="Economy Class">Economy Class (-15%)</option>
+                                <option value="Premium Class">Premium Class (+25%)</option>
+                                <option value="VIP / Business">VIP / Business (+50%)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Set New Fare (৳)</label>
+                            <input type="number" name="new_price" class="form-control border-warning" placeholder="e.g. 1500" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 fw-bold text-dark shadow-sm">Update Fare Live</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="table-wrapper border border-danger h-100 mt-0">
+                <h5 class="fw-bold text-danger border-bottom pb-2">💸 Add Trip Expenses (Fuel, Toll, Staff)</h5>
+                <form action="/operator_add_expense" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Expense Description</label>
+                        <input type="text" class="form-control border-danger" placeholder="e.g. Fuel Cost for Trip X" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Expense Amount (৳)</label>
+                        <input type="number" name="expense_amount" class="form-control border-danger" placeholder="e.g. 5000" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger w-100 fw-bold shadow-sm">Record Expense & Update Profit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrapper mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">🎫 Recent Ticket Sales (Manifest) - {{ total_tickets }} Tickets</h4>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light text-muted">
+                <tr>
+                    <th>PNR</th>
+                    <th>Passenger</th>
+                    <th>Route</th>
+                    <th>Journey Date & Time</th>
+                    <th>Seats Info</th>
+                    <th>Total Fare</th>
+                    <th>Status / Due</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for t in tickets %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ t.pnr }}</td>
+                        <td class="fw-bold">{{ t.passenger_name }}</td>
+                        <td>{{ t.departure }} ➔ {{ t.destination }}</td>
+                        <td><span class="text-danger fw-bold">{{ t.journey_date }}</span><br><small>{{ t.dep_time }}</small></td>
+                        <td style="max-width: 250px; font-size: 13px;">{{ t.seat_info }}</td>
+                        <td class="fw-bold">৳{{ t.price }}</td>
+                        <td>
+                            {% if t.due_amount > 0 %}
+                                <span class="badge badge-due shadow-sm">Due: ৳{{ t.due_amount }}</span><br>
+                                <a href="/operator_clear_due/{{ t.pnr }}" class="btn-collect" onclick="return confirm('Confirm collecting ৳{{ t.due_amount }} from passenger?')">✅ Collect Cash</a>
+                            {% elif 'Cancelled' in t.status %}
+                                <span class="badge bg-danger shadow-sm">{{ t.status }}</span>
+                            {% else %}
+                                <span class="badge badge-paid shadow-sm">100% Paid</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No tickets sold yet for your company.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const bookedSeatsByTrip = JSON.parse('{{ booked_seats_json | safe }}');
+    let posSelectedSeats = [];
+    let currentTripPrice = 0;
+
+    // 🌟 DYNAMIC OPERATOR SEAT MAP LOGIC (WITH AISLE GAP) 🌟
+    function renderOperatorSeatMap() {
+        const selectElem = document.getElementById('posTripSelect');
+        const selectedOption = selectElem.options[selectElem.selectedIndex];
+        const tripId = selectedOption.value;
+
+        const container = document.getElementById('operatorSeatMapContainer');
+        const grid = document.getElementById('operatorSeatGrid');
+        const qtyInput = document.getElementById('posQuantity');
+        const seatsInput = document.getElementById('posSelectedSeats');
+
+        posSelectedSeats = [];
+        grid.innerHTML = '<div class="steering">🧭</div>';
+        qtyInput.value = 0;
+        seatsInput.value = '';
+        document.getElementById('posSeatCount').innerText = '(0 Selected)';
+        document.getElementById('posTotalFare').innerText = '0';
+
+        if (!tripId) {
+            container.style.display = 'none';
+            return;
+        }
+
+        currentTripPrice = parseInt(selectedOption.getAttribute('data-price')) || 0;
+
+        // 🟢 FIX 2: Safely parse DB Available so '0' doesn't become 40
+        const dbAvailableRaw = parseInt(selectedOption.getAttribute('data-available'), 10);
+        const dbAvailable = isNaN(dbAvailableRaw) ? 40 : dbAvailableRaw;
+
+        const transportType = selectedOption.getAttribute('data-transport') || "Bus";
+
+        container.style.display = 'block';
+
+        let totalSeatsNum = 40;
+        let allSeats = [];
+        let steeringIcon = '🧭';
+
+        let gridColsCSS = '';
+        let spanCount = 0;
+
+        if (transportType === "Air") {
+            totalSeatsNum = 60;
+            steeringIcon = '✈️';
+            gridColsCSS = '1fr 1fr 1fr 0.5fr 1fr 1fr 1fr';
+            spanCount = 7;
+            for (let i = 1; i <= 10; i++) {
+                ['A', 'B', 'C', 'D', 'E', 'F'].forEach(c => allSeats.push(i + c));
+            }
+        } else if (transportType === "Train") {
+            totalSeatsNum = 40;
+            steeringIcon = '🚂';
+            gridColsCSS = '1fr 1fr 0.5fr 1fr 1fr';
+            spanCount = 5;
+            for (let i = 1; i <= 40; i++) {
+                allSeats.push('T' + i);
+            }
+        } else if (transportType === "Launch") {
+            totalSeatsNum = 40;
+            steeringIcon = '🚢';
+            gridColsCSS = '1fr 1fr 0.5fr 1fr 1fr';
+            spanCount = 5;
+            for (let i = 101; i <= 140; i++) {
+                allSeats.push('C' + i);
+            }
+        } else {
+            totalSeatsNum = 40;
+            steeringIcon = '🚌';
+            gridColsCSS = '1fr 1fr 0.5fr 1fr 1fr';
+            spanCount = 5;
+            ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'].forEach(row => {
+                for(let i=1; i<=4; i++) allSeats.push(row + i);
+            });
+        }
+
+        grid.style.gridTemplateColumns = gridColsCSS;
+        grid.innerHTML = `<div class="steering" style="grid-column: span ${spanCount};">${steeringIcon}</div>`;
+
+        let bookedForThisTrip = bookedSeatsByTrip[tripId] || [];
+
+        let expectedBooked = totalSeatsNum - dbAvailable;
+        if (expectedBooked < 0) expectedBooked = 0;
+
+        if (bookedForThisTrip.length < expectedBooked) {
+            let needed = expectedBooked - bookedForThisTrip.length;
+            let availableToDummy = allSeats.filter(s => !bookedForThisTrip.includes(s));
+            availableToDummy.sort(() => 0.5 - Math.random());
+            let dummies = availableToDummy.slice(0, needed);
+            bookedForThisTrip = bookedForThisTrip.concat(dummies);
+        }
+
+        let colCount = 0;
+        allSeats.forEach(seatNo => {
+            let div = document.createElement('div');
+            div.className = 'seat';
+            div.innerText = seatNo;
+
+            if (bookedForThisTrip.includes(seatNo)) {
+                div.classList.add('booked');
+            } else {
+                div.onclick = () => togglePosSeat(div, seatNo);
+            }
+            grid.appendChild(div);
+
+            colCount++;
+
+            if (transportType === "Air" && colCount === 3) {
+                grid.appendChild(document.createElement('div'));
+            } else if (transportType !== "Air" && colCount === 2) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            if ((transportType === "Air" && colCount === 6) || (transportType !== "Air" && colCount === 4)) {
+                colCount = 0;
+            }
+        });
+    }
+
+    function togglePosSeat(elem, seatNo) {
+        if (posSelectedSeats.includes(seatNo)) {
+            posSelectedSeats = posSelectedSeats.filter(s => s !== seatNo);
+            elem.classList.remove('selected');
+        } else {
+            if (posSelectedSeats.length >= 10) return alert("Maximum 10 seats allowed per transaction.");
+            posSelectedSeats.push(seatNo);
+            elem.classList.add('selected');
+        }
+
+        document.getElementById('posSelectedSeats').value = posSelectedSeats.join(', ');
+        document.getElementById('posQuantity').value = posSelectedSeats.length;
+        document.getElementById('posSeatCount').innerText = `(${posSelectedSeats.length} Selected)`;
+
+        let totalFare = posSelectedSeats.length * currentTripPrice;
+        document.getElementById('posTotalFare').innerText = totalFare;
+    }
+
+    function validatePosBooking() {
+        const form = document.getElementById('posForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return false;
+        }
+        const qty = parseInt(document.getElementById('posQuantity').value);
+        const trip = document.getElementById('posTripSelect').value;
+        if (trip && qty === 0) {
+            alert("⚠️ Please select at least 1 seat from the Map to book the ticket.");
+            return false;
+        }
+        return true;
+    }
+
+    // 🌟 DYNAMIC CITY FILTERING LOGIC 🌟
+    const bdCities = {
+        "Bus": ["Dhaka", "Chittagong", "Sylhet", "Rajshahi", "Khulna", "Barisal", "Cox's Bazar", "Jessore", "Saidpur", "Chandpur", "Kuakata", "Rangpur", "Dinajpur", "Feni", "Rajbari", "Bogura", "Pabna", "Faridpur"],
+        "Train": ["Dhaka", "Chittagong", "Sylhet", "Rajshahi", "Khulna", "Jessore", "Saidpur", "Dinajpur", "Feni", "Rajbari", "Pabna"],
+        "Air": ["Dhaka", "Chittagong", "Sylhet", "Rajshahi", "Barisal", "Cox's Bazar", "Jessore", "Saidpur"],
+        "Launch": ["Dhaka", "Barisal", "Chandpur", "Bhola", "Patuakhali", "Hatiya", "Kuakata", "Munshiganj", "Madaripur", "Shariatpur"]
+    };
+
+    let opTransportType = document.getElementById('opTransportType').value;
+    let allowedCities = bdCities[opTransportType] || bdCities["Bus"];
+
+    const depSelect = document.getElementById('depCity');
+    const destSelect = document.getElementById('destCity');
+
+    function initRouteDropdowns() {
+        depSelect.innerHTML = '<option value="">-- From --</option>';
+        allowedCities.sort().forEach(city => {
+            depSelect.innerHTML += `<option value="${city}">${city}</option>`;
+        });
+        destSelect.innerHTML = '<option value="">-- To (Select From First) --</option>';
+
+        let defaultSeats = (opTransportType === "Air") ? 60 : 40;
+        document.getElementById('seatsAvailableInput').value = defaultSeats;
+    }
+
+    function filterDestinationCities() {
+        let selectedDep = depSelect.value;
+        destSelect.innerHTML = '<option value="">-- To --</option>';
+        if(!selectedDep) {
+            destSelect.innerHTML = '<option value="">-- To (Select From First) --</option>';
+            return;
+        }
+        allowedCities.sort().forEach(city => {
+            if(city !== selectedDep) {
+                destSelect.innerHTML += `<option value="${city}">${city}</option>`;
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", initRouteDropdowns);
+</script>
+</body>
+</html>

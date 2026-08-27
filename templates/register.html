@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    body { background: #ffffff !important; }
+
+    .shohoz-split-layout {
+        display: flex;
+        min-height: calc(100vh - 130px);
+        align-items: center;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .shohoz-left-img {
+        flex: 0 0 50%;
+        height: calc(100vh - 130px);
+        border-radius: 0 80px 80px 0;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .shohoz-right-form {
+        flex: 0 0 50%;
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+    }
+
+    .auth-form-wrapper { max-width: 450px; width: 100%; }
+
+    .auth-title { font-weight: 800; color: #212529; margin-bottom: 10px; font-size: 32px; }
+    .auth-subtitle { color: #6c757d; font-size: 15px; margin-bottom: 30px; line-height: 1.6; }
+
+    .auth-input-group { margin-bottom: 18px; }
+    .auth-input-group label { font-size: 13px; color: #6c757d; font-weight: 700; margin-bottom: 8px; }
+    .auth-input-group label span { color: #dc3545; }
+    .auth-input-group input { border: 1px solid #ced4da; border-radius: 8px; padding: 12px 15px; font-size: 15px; width: 100%; transition: 0.3s; }
+    .auth-input-group input:focus { border-color: #009943; box-shadow: 0 0 0 3px rgba(0,153,67,0.1); outline: none; }
+
+    .btn-auth { background-color: #a5d6a7; color: #1b5e20; font-weight: 800; padding: 14px; border-radius: 8px; border: none; width: 100%; transition: 0.3s; font-size: 16px; margin-top: 10px;}
+    .btn-auth:hover { background-color: #009943; color: white; }
+
+    .auth-link { color: #009943; font-weight: 700; text-decoration: none; transition: 0.2s; }
+    .auth-link:hover { color: #007a35; text-decoration: underline; }
+
+    .auth-carousel { height: 100%; }
+    .auth-carousel .carousel-inner, .auth-carousel .carousel-item { height: 100%; }
+    .carousel-img { width: 100%; height: 100%; object-fit: cover; }
+
+    .carousel-overlay {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        padding: 50px 40px;
+        color: white;
+        z-index: 2;
+        border-radius: 0 0 80px 0;
+    }
+    .carousel-overlay h2 { font-weight: 800; font-size: 35px; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+
+    .shohoz-footer { display: none !important; }
+</style>
+
+<div class="container-fluid p-0">
+    <div class="shohoz-split-layout">
+
+        <!-- 🌟 LEFT SIDE 🌟 -->
+        <div class="shohoz-left-img d-none d-md-block">
+            <div id="regCarousel" class="carousel slide carousel-fade auth-carousel" data-bs-ride="carousel" data-bs-interval="4000">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=1200&q=80" class="carousel-img" alt="Travel">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80" class="carousel-img" alt="Travel">
+                    </div>
+                </div>
+                <div class="carousel-overlay">
+                    <h2>Think Tickets, Think Jatra App BD</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🌟 RIGHT SIDE 🌟 -->
+        <div class="shohoz-right-form">
+            <div class="auth-form-wrapper">
+                <h2 class="auth-title">Create Account</h2>
+                <p class="auth-subtitle">Join <strong class="text-success">Jatra App BD</strong> today and get <strong>50 Bonus Coins</strong> instantly!</p>
+
+                <form action="/register" method="POST">
+                    <div class="auth-input-group">
+                        <label>Full Name <span>*</span></label>
+                        <input type="text" name="name" placeholder="e.g., Rifat Bin Tayub" required autocomplete="off">
+                    </div>
+
+                    <div class="auth-input-group">
+                        <label>Email Address <span>*</span></label>
+                        <input type="email" name="email" placeholder="Enter your email" required autocomplete="off">
+                    </div>
+
+                    <div class="auth-input-group">
+                        <label>Password <span>*</span></label>
+                        <input type="password" name="password" placeholder="Create a strong password" required>
+                    </div>
+
+                    <button type="submit" class="btn-auth">Register Now</button>
+                </form>
+
+                <div class="text-center mt-4 pt-2 border-top">
+                    <p class="text-muted small m-0">Already have an account? <a href="/login" class="auth-link">Log In</a></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

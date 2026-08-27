@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jatra App BD | Smart Ticket Booking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        body {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%, #e0c3fc 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper { flex: 1; }
+        .navbar { background-color: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(10px); }
+
+        /* 🌟 GLOWING LOGO CSS 🌟 */
+        .navbar-brand { font-weight: 900; letter-spacing: 1px; display: flex; align-items: center;}
+        .logo-text {
+            color: #009943 !important;
+            text-shadow: 0 0 5px rgba(0, 153, 67, 0.5);
+            animation: textGlow 2s infinite alternate;
+        }
+        .logo-icon {
+            background: #009943;
+            color: white;
+            border-radius: 8px;
+            padding: 4px 10px;
+            margin-right: 8px;
+            font-size: 18px;
+            box-shadow: 0 0 10px #009943;
+            animation: iconGlow 2s infinite alternate;
+        }
+        @keyframes textGlow {
+            from { text-shadow: 0 0 2px #009943; }
+            to { text-shadow: 0 0 15px #009943, 0 0 20px #239b6e; }
+        }
+        @keyframes iconGlow {
+            from { box-shadow: 0 0 5px #009943; }
+            to { box-shadow: 0 0 20px #009943, 0 0 30px #239b6e; }
+        }
+
+        .btn-shohoz { background-color: #009943; color: white; transition: 0.3s; }
+        .btn-shohoz:hover { background-color: #007a35; color: white; transform: translateY(-2px); }
+
+        /* 🌟 GLOBAL HOVER EFFECT FOR ALL CARDS IN THE APP 🌟 */
+        .shohoz-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .shohoz-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15) !important;
+        }
+
+        /* 🌟 MOVING DISCOUNT BANNER 🌟 */
+        .global-discount-banner {
+            background: linear-gradient(90deg, #ff0055, #ffb300, #ff0055);
+            background-size: 200% auto;
+            color: white;
+            padding: 10px 15px;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1050;
+            overflow: hidden;
+        }
+        .global-discount-banner marquee { margin: 0; padding: 0; display: flex; align-items: center; }
+
+        /* 🌟 PROFESSIONAL FOOTER CSS 🌟 */
+        .shohoz-footer {
+            background: #239b6e;
+            color: #ffffff;
+            padding: 60px 0 20px;
+            margin-top: 50px;
+        }
+        .shohoz-footer a {
+            color: #e8f5e9;
+            text-decoration: none;
+            transition: 0.3s;
+            line-height: 2.2;
+            font-size: 15px;
+            display: block;
+            cursor: pointer;
+        }
+        .shohoz-footer a:hover { color: #ffffff; padding-left: 5px; }
+        .shohoz-footer h5 { font-weight: 700; margin-bottom: 20px; color: #ffffff; }
+        .footer-social-icons a { display: inline-block; font-size: 22px; margin-right: 15px; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 40px; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="global-discount-banner shadow-sm">
+        <marquee behavior="scroll" direction="left" scrollamount="7" onmouseover="this.stop();" onmouseout="this.start();">
+            🚀 <strong>REAL OFFERS IN JATRA APP BD:</strong> 🪙 Apply <strong>JATRA COINS</strong> at checkout for instant discounts! &nbsp;&nbsp;|&nbsp;&nbsp; 💳 Reserve your seat now with <strong>50% Partial Payment</strong>! &nbsp;&nbsp;|&nbsp;&nbsp; 🔄 Fully automated <strong>Refund Policy (Up to 90%)</strong> for cancelled tickets! &nbsp;&nbsp;|&nbsp;&nbsp; ⭐ Leave a review and get <strong>5 Bonus Coins</strong>!
+        </marquee>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="{{ url_for('static', filename='audio/bg_music.mp3') }}" type="audio/mpeg">
+    </audio>
+
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top shadow-sm py-3">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <span class="logo-icon">🎫</span>
+                <span class="logo-text">JATRA APP <span class="text-danger ms-1">BD</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center fw-bold text-dark">
+                    <li class="nav-item me-3 d-none d-lg-block">
+                        <span class="text-danger small">📞 Helpline: 16242 (24/7)</span>
+                    </li>
+                    <li class="nav-item me-3">
+                        <button id="musicToggleBtn" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold" onclick="toggleMusic()">🎵 Play Music</button>
+                    </li>
+                    <li class="nav-item me-3">
+                        <a class="nav-link text-dark" href="/">Home</a>
+                    </li>
+                    {% if 'user_id' in session %}
+                    <li class="nav-item me-3">
+                        <span class="nav-link text-primary">👤 {{ session['user_name'] }}</span>
+                    </li>
+                    <li class="nav-item me-3">
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill border border-warning shadow-sm">🪙 {{ session.get('coins', 0) }}</span>
+                    </li>
+                    <li class="nav-item me-3">
+                        <a class="nav-link text-dark" href="/my_tickets">🎫 My Tickets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="/logout">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+                    <li class="nav-item"><a class="btn btn-shohoz btn-sm ms-2" href="/register">Register</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm fw-bold" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="content-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="shohoz-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h3 class="fw-bolder mb-3">JATRA APP BD</h3>
+                    <p style="font-size: 14px; line-height: 1.8; color: #e8f5e9;">
+                        Jatra App BD, is Bangladesh's largest online ticket destination, which is committed to making your life convenient, easier and smarter. Book Bus, Train, Air & Launch tickets in one place.
+                    </p>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h5>Quick Links</h5>
+                    <a href="/">Home</a>
+                    <a href="#">About Us</a>
+                    <a href="#">Contact Us</a>
+                    <a href="#">Deals and Offer</a>
+                    <a href="/my_tickets">Cancel Ticket</a>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Services</h5>
+                    <a href="/">Bus Tickets</a>
+                    <a href="/">Air Tickets</a>
+                    <a href="/">Train Tickets</a>
+                    <a href="/">Launch Tickets</a>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Information</h5>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms & Conditions</a>
+                    <a data-bs-toggle="modal" data-bs-target="#brtaRefundModal">Refund Policy</a>
+                </div>
+            </div>
+            <div class="footer-bottom d-flex justify-content-between align-items-center flex-wrap">
+                <div>Copyright © 2026 Jatra App BD Ltd. All Rights Reserved.</div>
+                <div class="footer-social-icons mt-3 mt-md-0">
+                    <a href="#">📱</a>
+                    <a href="#">📸</a>
+                    <a href="#">💼</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal fade" id="brtaRefundModal" tabindex="-1" aria-labelledby="brtaRefundModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold" id="brtaRefundModalLabel">🇧🇩 BRTA Official Refund & Cancellation Policy</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-dark">
+                    <p class="mb-4">As per the guidelines of the <strong>Bangladesh Road Transport Authority (BRTA)</strong> and the <strong>Passenger Rights Act</strong>, Jatra App BD follows a strict, transparent, and fully automated refund policy for ticket cancellations.</p>
+
+                    <h6 class="fw-bold text-success border-bottom pb-2">Cancellation Timeframe & Refund Percentage:</h6>
+                    <ul class="list-group list-group-flush mb-4 shadow-sm rounded">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>🕒 <strong>48 Hours</strong> or more before departure</span>
+                            <span class="badge bg-success rounded-pill fs-6">90% Refund</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>🕒 Between <strong>24 to 48 Hours</strong> before departure</span>
+                            <span class="badge bg-primary rounded-pill fs-6">50% Refund</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>🕒 Between <strong>12 to 24 Hours</strong> before departure</span>
+                            <span class="badge bg-warning text-dark rounded-pill fs-6">25% Refund</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>🕒 <strong>Less than 12 Hours</strong> or after departure</span>
+                            <span class="badge bg-danger rounded-pill fs-6">0% (No Refund)</span>
+                        </li>
+                    </ul>
+
+                    <div class="alert alert-info border-info" role="alert">
+                        <strong>💡 Important Notes:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>The 10% deduction on the 48-hour slot is kept as a standard system service charge.</li>
+                            <li>Refunds are instantly processed back to your original payment method.</li>
+                            <li>If you used Jatra Coins for booking, the used coins will be returned to your account.</li>
+                            <li>Any Jatra Coins earned from the canceled trip will be deducted from your wallet.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">I Understand</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const music = document.getElementById("bgMusic");
+        const btn = document.getElementById("musicToggleBtn");
+
+        // Check previous state on page load
+        window.addEventListener("DOMContentLoaded", () => {
+            const musicState = localStorage.getItem("jatra_music_playing");
+            const musicCurrentTime = localStorage.getItem("jatra_music_time");
+
+            if (musicCurrentTime) {
+                music.currentTime = parseFloat(musicCurrentTime);
+            }
+
+            if (musicState === "true") {
+                music.play().then(() => {
+                    btn.innerHTML = "⏸️ Pause Music";
+                    btn.classList.replace("btn-outline-success", "btn-success");
+                }).catch(e => {
+                    console.log("Autoplay prevented:", e);
+                });
+            }
+        });
+
+        // Save current playback time continuously
+        setInterval(() => {
+            if (!music.paused) {
+                localStorage.setItem("jatra_music_time", music.currentTime);
+            }
+        }, 500);
+
+        function toggleMusic() {
+            if (music.paused) {
+                music.play();
+                localStorage.setItem("jatra_music_playing", "true");
+                btn.innerHTML = "⏸️ Pause Music";
+                btn.classList.replace("btn-outline-success", "btn-success");
+            } else {
+                music.pause();
+                localStorage.setItem("jatra_music_playing", "false");
+                btn.innerHTML = "🎵 Play Music";
+                btn.classList.replace("btn-success", "btn-outline-success");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1871 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+
+    /* =======================================================================
+       🟢 ১. আপনার অরিজিনাল ভিজিবল ডিজাইনের CSS
+       এখানে visible ticket design change করা হয়নি।
+       ======================================================================= */
+
+    .ticket-wrapper {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+    .ticket-header {
+        color: white;
+        padding: 20px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .header-full {
+        background: linear-gradient(
+            90deg,
+            #0d6efd,
+            #009943
+        );
+    }
+
+    .header-partial {
+        background: linear-gradient(
+            90deg,
+            #dc3545,
+            #fd7e14
+        );
+    }
+
+    .ticket-header h4 {
+        margin: 0;
+        font-weight: 900;
+        display: flex;
+        flex-direction: column;
+        text-transform: uppercase;
+        font-size: 20px;
+    }
+
+    .ticket-header h4 small {
+        font-size: 13px;
+        font-weight: 600;
+        margin-top: 4px;
+        text-transform: none;
+    }
+
+    .class-badge {
+        background: white;
+        color: #212529;
+        padding: 6px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 13px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .ticket-body {
+        padding: 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .watermark-bg {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform:
+            translate(-50%, -50%)
+            rotate(-25deg);
+        font-size: 50px;
+        font-weight: 900;
+        white-space: nowrap;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .wm-partial {
+        color: rgba(220, 53, 69, 0.08);
+    }
+
+    .wm-full {
+        color: rgba(25, 135, 84, 0.08);
+    }
+
+    .route-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 25px;
+        border-bottom: 1px dashed #dee2e6;
+        padding-bottom: 20px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .route-city {
+        font-size: 16px;
+        font-weight: 900;
+        color: #198754;
+    }
+
+    .route-label {
+        font-size: 11px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .arrow-icon {
+        background: #0dcaf0;
+        color: white;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-weight: bold;
+        box-shadow:
+            0 3px 6px
+            rgba(13,202,240,0.3);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+        position: relative;
+        z-index: 2;
+    }
+
+    @media (min-width: 768px) {
+
+        .info-grid {
+            grid-template-columns:
+                repeat(4, 1fr);
+        }
+    }
+
+    .info-item label {
+        font-size: 11px;
+        color: #6c757d;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+        display: block;
+    }
+
+    .info-item span {
+        font-size: 14px;
+        color: #212529;
+        font-weight: 700;
+    }
+
+    .pnr-text {
+        color: #0d6efd !important;
+        font-weight: 900;
+        font-size: 16px !important;
+    }
+
+    .payment-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-weight: bold;
+        position: relative;
+        z-index: 2;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .pay-full {
+        background: #f0fdf4;
+        border: 2px solid #198754;
+        color: #198754;
+    }
+
+    .pay-partial {
+        background: #fff5f5;
+        border: 2px solid #dc3545;
+        color: #dc3545;
+    }
+
+    .pay-amount {
+        font-size: 20px;
+        font-weight: 900;
+    }
+
+</style>
+
+
+<div class="container mt-4 mb-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8 col-md-10">
+
+
+            <!-- ===========================================================
+                 EXISTING VISIBLE E-TICKET
+                 কোনো design পরিবর্তন করা হয়নি
+                 =========================================================== -->
+
+            <div
+                class="ticket-wrapper"
+                id="ticketContentView"
+            >
+
+
+                <!-- ==========================
+                     JATRA HEADER
+                     ========================== -->
+
+                <div
+                    class="bg-white text-center py-2"
+                    style="
+                        border-bottom:
+                        2px dashed #dee2e6;
+                    "
+                >
+
+                    <h5
+                        class="m-0 fw-bolder"
+                        style="
+                            color: #1e3c72;
+                            letter-spacing: 1px;
+                        "
+                    >
+                        JATRA APP BD
+
+                        <span class="fs-6">
+                            🌍
+                        </span>
+
+                    </h5>
+
+
+                    <small
+                        class="text-muted fw-bold"
+                        style="
+                            font-size: 11px;
+                            letter-spacing: 2px;
+                        "
+                    >
+                        YOUR SMART TRAVEL PARTNER
+                    </small>
+
+                </div>
+
+
+                <!-- ==========================
+                     TICKET HEADER
+                     ========================== -->
+
+                <div
+                    class="
+                        ticket-header
+
+                        {% if ticket['due_amount'] > 0 %}
+
+                            header-partial
+
+                        {% else %}
+
+                            header-full
+
+                        {% endif %}
+                    "
+                >
+
+                    <h4>
+
+                        {% if ticket['due_amount'] > 0 %}
+
+                            ⚠️ RESERVATION VOUCHER
+
+                        {% else %}
+
+                            🎫 BOARDING PASS
+
+                        {% endif %}
+
+
+                        <small class="text-white">
+
+                            {{ ticket['operator'] }}
+
+                        </small>
+
+                    </h4>
+
+
+                    <span class="class-badge">
+
+                        {{ ticket['transport_type'] }}
+
+                    </span>
+
+                </div>
+
+
+                <!-- ==========================
+                     BODY
+                     ========================== -->
+
+                <div class="ticket-body">
+
+
+                    <!-- WATERMARK -->
+
+                    <div
+                        class="
+                            watermark-bg
+
+                            {% if ticket['due_amount'] > 0 %}
+
+                                wm-partial
+
+                            {% else %}
+
+                                wm-full
+
+                            {% endif %}
+                        "
+                    >
+
+                        {% if ticket['due_amount'] > 0 %}
+
+                            50% DUE
+
+                        {% else %}
+
+                            PAID
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- ==========================
+                         ROUTE
+                         ========================== -->
+
+                    <div class="route-section">
+
+
+                        <div>
+
+                            <div class="route-label">
+
+                                FROM
+
+                            </div>
+
+                            <div class="route-city">
+
+                                {{ frm_station }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="arrow-icon">
+
+                            ➡️
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="route-label">
+
+                                TO
+
+                            </div>
+
+                            <div class="route-city">
+
+                                {{ to_station }}
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- ==========================
+                         BASIC INFORMATION
+                         ========================== -->
+
+                    <div class="info-grid">
+
+
+                        <div class="info-item">
+
+                            <label>
+                                Passenger
+                            </label>
+
+                            <span>
+
+                                {{ ticket['passenger_name'] }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="info-item">
+
+                            <label>
+                                PNR Code
+                            </label>
+
+                            <span class="pnr-text">
+
+                                {{ ticket['pnr'] }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="info-item">
+
+                            <label>
+                                Journey Date
+                            </label>
+
+                            <span>
+
+                                {{ ticket['journey_date'] }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="info-item">
+
+                            <label>
+                                Status
+                            </label>
+
+                            <span
+                                class="
+                                    {% if ticket['due_amount'] > 0 %}
+
+                                        text-danger
+
+                                    {% else %}
+
+                                        text-success
+
+                                    {% endif %}
+                                "
+                            >
+
+                                {{ ticket['status'] }}
+
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- ==========================
+                         TICKET INFORMATION
+                         ========================== -->
+
+                    <div
+                        class="
+                            mb-4
+                            position-relative
+                            border-bottom
+                            pb-3
+                        "
+
+                        style="
+                            z-index: 2;
+                        "
+                    >
+
+                        <label
+                            class="
+                                fw-bold
+                                text-muted
+                                text-uppercase
+                                mb-1
+                            "
+
+                            style="
+                                font-size: 11px;
+                            "
+                        >
+
+                            Ticket Information
+
+                        </label>
+
+                        <br>
+
+
+                        <span
+                            class="
+                                text-primary
+                                fw-bolder
+                            "
+
+                            style="
+                                font-size: 15px;
+                            "
+                        >
+
+                            {{ ticket['seat_info'] }}
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- ==========================
+                         PAYMENT BOX
+                         ========================== -->
+
+                    <div
+                        class="
+                            payment-box
+
+                            {% if ticket['due_amount'] > 0 %}
+
+                                pay-partial
+
+                            {% else %}
+
+                                pay-full
+
+                            {% endif %}
+                        "
+                    >
+
+
+                        <div>
+
+                            <span
+                                style="
+                                    font-size: 11px;
+                                    text-transform: uppercase;
+                                    color: #6c757d;
+                                "
+                            >
+
+                                Pay Method:
+
+                                {{ ticket['payment_method'] }}
+
+                            </span>
+
+                            <br>
+
+
+                            {% if ticket['due_amount'] > 0 %}
+
+                                <span class="fs-6">
+
+                                    STATUS:
+
+                                    <b>
+                                        RESERVED
+                                    </b>
+
+                                </span>
+
+                                <br>
+
+                            {% else %}
+
+                                <span class="fs-6">
+
+                                    STATUS:
+
+                                    <b>
+                                        CONFIRMED
+                                    </b>
+
+                                </span>
+
+                                <br>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="text-end">
+
+
+                            <span
+                                class="
+                                    text-dark
+                                    fw-normal
+                                    small
+                                "
+                            >
+
+                                Fare:
+
+                                ৳{{ ticket['price'] }}
+
+                            </span>
+
+                            <br>
+
+
+                            <span
+                                class="
+                                    text-dark
+                                    fw-normal
+                                    small
+                                "
+                            >
+
+                                Paid:
+
+                                ৳{{ ticket['price'] - ticket['due_amount'] }}
+
+                            </span>
+
+                            <br>
+
+
+                            {% if ticket['due_amount'] > 0 %}
+
+                                <span
+                                    class="
+                                        pay-amount
+                                        text-danger
+                                    "
+                                >
+
+                                    DUE:
+
+                                    ৳{{ ticket['due_amount'] }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span
+                                    class="
+                                        pay-amount
+                                        text-success
+                                    "
+                                >
+
+                                    DUE: ৳0
+
+                                </span>
+
+                            {% endif %}
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- ==========================
+                         DEPARTURE
+                         ========================== -->
+
+                    <div
+                        class="
+                            position-relative
+                            text-center
+                        "
+
+                        style="
+                            z-index: 2;
+                        "
+                    >
+
+                        <p
+                            class="
+                                mb-1
+                                fw-bold
+                                text-dark
+                            "
+                        >
+
+                            Departure Time:
+
+                            <span class="text-danger">
+
+                                {{ ticket['dep_time'] }}
+
+                            </span>
+
+                        </p>
+
+
+                        <p
+                            class="
+                                mb-0
+                                text-muted
+                                small
+                                mt-4
+                            "
+                        >
+
+                            ✅ System-generated E-Ticket verified via Jatra App BD.
+
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- ==========================
+                     BOTTOM PRINTED DATE
+                     ========================== -->
+
+                <div
+                    class="
+                        bg-light
+                        text-center
+                        py-2
+                    "
+
+                    style="
+                        border-top:
+                        2px dashed #dee2e6;
+                    "
+                >
+
+                    <small
+                        class="
+                            text-muted
+                            fw-bold
+                        "
+
+                        style="
+                            font-size: 11px;
+                        "
+                    >
+
+                        📅 Printed On:
+
+                        <span class="text-dark">
+
+                            {{ current_time }}
+
+                        </span>
+
+                        |
+
+                        💻 Verifiable E-Ticket
+
+                    </small>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ===========================================================
+                 BUTTONS
+                 =========================================================== -->
+
+            <div
+                class="
+                    action-buttons
+                    no-print
+                    mt-4
+                    text-center
+                "
+            >
+
+
+                <!--
+                ============================================================
+                IMPORTANT:
+
+                Button-এর visible design আগের মতোই আছে।
+
+                শুধু click করলে এখন নতুন professional backend invoice
+                route call করবে।
+                ============================================================
+                -->
+
+                <button
+                    class="
+                        btn
+                        btn-success
+                        px-4
+                        py-2
+                        fw-bold
+                        shadow-sm
+                    "
+
+                    onclick="
+                        generateProfessionalViewPDF()
+                    "
+                >
+
+                    📥 Download PDF
+
+                </button>
+
+
+                <a
+                    href="/"
+
+                    class="
+                        btn
+                        btn-outline-secondary
+                        px-4
+                        py-2
+                        fw-bold
+                        shadow-sm
+                    "
+                >
+
+                    Back to Home
+
+                </a>
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================================
+     তোমার আগের HIDDEN PDF TEMPLATE
+     DELETE করা হয়নি।
+     ================================================================ -->
+
+<div
+    id="hiddenPdfTemplate"
+    style="display: none;"
+>
+
+    <div
+        id="invoiceToPrint"
+
+        style="
+            width: 800px;
+            padding: 40px;
+            background: #ffffff;
+            font-family: Arial, sans-serif;
+            color: #333;
+            position: relative;
+        "
+    >
+
+
+        <div
+            style="
+                position: absolute;
+                top: 40%;
+                left: 50%;
+                transform:
+                    translate(-50%, -50%)
+                    rotate(-30deg);
+                font-size: 70px;
+                font-weight: 900;
+                color: rgba(0,0,0,0.04);
+                z-index: 0;
+            "
+        >
+
+            JATRA APP BD
+
+        </div>
+
+
+        <div
+            style="
+                position: relative;
+                z-index: 1;
+            "
+        >
+
+
+            <table
+                style="
+                    width: 100%;
+                    border-bottom:
+                        3px solid #1e3c72;
+                    padding-bottom: 15px;
+                    margin-bottom: 25px;
+                    border-collapse: collapse;
+                "
+            >
+
+                <tr>
+
+
+                    <td
+                        style="
+                            width: 60%;
+                            vertical-align: top;
+                        "
+                    >
+
+                        <h1
+                            style="
+                                margin: 0;
+                                color: #1e3c72;
+                                font-size: 32px;
+                                font-weight: 900;
+                                letter-spacing: 1px;
+                            "
+                        >
+
+                            JATRA APP BD
+
+                        </h1>
+
+
+                        <p
+                            style="
+                                margin: 5px 0 0 0;
+                                font-size: 13px;
+                                color: #555;
+                                font-weight: bold;
+                            "
+                        >
+
+                            Your Smart Travel Partner
+
+                        </p>
+
+
+                        <p
+                            style="
+                                margin: 2px 0 0 0;
+                                font-size: 12px;
+                                color: #777;
+                            "
+                        >
+
+                            www.jatraapp.com.bd |
+                            Help: 16242
+
+                        </p>
+
+                    </td>
+
+
+                    <td
+                        style="
+                            width: 40%;
+                            text-align: right;
+                            vertical-align: bottom;
+                        "
+                    >
+
+                        <h2
+                            style="
+                                margin: 0 0 5px 0;
+                                color: #333;
+                                font-size: 20px;
+                                text-transform: uppercase;
+                            "
+                        >
+
+                            {% if ticket['due_amount'] > 0 %}
+
+                                Reservation Voucher
+
+                            {% else %}
+
+                                E-Ticket / Tax Invoice
+
+                            {% endif %}
+
+                        </h2>
+
+
+                        <p
+                            style="
+                                margin: 0 0 3px 0;
+                                font-size: 16px;
+                                font-weight: bold;
+                                color: #0d6efd;
+                            "
+                        >
+
+                            PNR:
+
+                            {{ ticket['pnr'] }}
+
+                        </p>
+
+
+                        <p
+                            style="
+                                margin: 0;
+                                font-size: 12px;
+                                color: #777;
+                            "
+                        >
+
+                            Date Printed:
+
+                            {{ current_time }}
+
+                        </p>
+
+                    </td>
+
+
+                </tr>
+
+            </table>
+
+
+            <table
+                style="
+                    width: 100%;
+                    margin-bottom: 30px;
+                    border-collapse: collapse;
+                "
+            >
+
+                <tr>
+
+
+                    <td
+                        style="
+                            width: 48%;
+                            vertical-align: top;
+                            background: #f8f9fa;
+                            padding: 15px;
+                            border:
+                                1px solid #dee2e6;
+                            border-top:
+                                3px solid #009943;
+                        "
+                    >
+
+                        <h4
+                            style="
+                                margin: 0 0 10px 0;
+                                font-size: 12px;
+                                color: #6c757d;
+                                border-bottom:
+                                    1px solid #dee2e6;
+                                padding-bottom: 5px;
+                                text-transform: uppercase;
+                            "
+                        >
+
+                            Passenger Details
+
+                        </h4>
+
+
+                        <p
+                            style="
+                                margin: 0 0 5px 0;
+                                font-weight: bold;
+                                font-size: 18px;
+                                color: #000;
+                            "
+                        >
+
+                            {{ ticket['passenger_name'] }}
+
+                        </p>
+
+
+                        <p
+                            style="
+                                margin: 0 0 5px 0;
+                                font-size: 14px;
+                                color: #333;
+                            "
+                        >
+
+                            Journey Date:
+
+                            <b>
+
+                                {{ ticket['journey_date'] }}
+
+                            </b>
+
+                        </p>
+
+
+                        <p
+                            style="
+                                margin: 0;
+                                font-size: 14px;
+                                color: #333;
+                            "
+                        >
+
+                            Boarding Time:
+
+                            <b
+                                style="
+                                    color: #dc3545;
+                                "
+                            >
+
+                                {{ ticket['dep_time'] }}
+
+                            </b>
+
+                        </p>
+
+                    </td>
+
+
+                    <td style="width: 4%;"></td>
+
+
+                    <td
+                        style="
+                            width: 48%;
+                            vertical-align: top;
+                            background: #f8f9fa;
+                            padding: 15px;
+                            border:
+                                1px solid #dee2e6;
+                            border-top:
+                                3px solid #0d6efd;
+                        "
+                    >
+
+                        <h4
+                            style="
+                                margin: 0 0 10px 0;
+                                font-size: 12px;
+                                color: #6c757d;
+                                border-bottom:
+                                    1px solid #dee2e6;
+                                padding-bottom: 5px;
+                                text-transform: uppercase;
+                            "
+                        >
+
+                            Trip Information
+
+                        </h4>
+
+
+                        <p
+                            style="
+                                margin: 0 0 5px 0;
+                                font-size: 15px;
+                                color: #000;
+                                font-weight: bold;
+                            "
+                        >
+
+                            {{ ticket['operator'] }}
+
+                            (
+
+                            {{ ticket['transport_type'] }}
+
+                            )
+
+                        </p>
+
+
+                        <p
+                            style="
+                                margin: 0 0 5px 0;
+                                font-size: 14px;
+                                color: #333;
+                            "
+                        >
+
+                            Route:
+
+                            <b>
+
+                                {{ frm_station }}
+
+                            </b>
+
+                            to
+
+                            <b>
+
+                                {{ to_station }}
+
+                            </b>
+
+                        </p>
+
+
+                        <p
+                            style="
+                                margin: 0;
+                                font-size: 14px;
+                                color: #333;
+                            "
+                        >
+
+                            Ticket Info:
+
+                            <b>
+
+                                {{ ticket['seat_info'] }}
+
+                            </b>
+
+                        </p>
+
+                    </td>
+
+
+                </tr>
+
+            </table>
+
+
+            <table
+                style="
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 30px;
+                "
+            >
+
+
+                <thead>
+
+                    <tr
+                        style="
+                            background-color: #1e3c72;
+                            color: white;
+                        "
+                    >
+
+                        <th
+                            style="
+                                padding: 12px;
+                                text-align: left;
+                                font-size: 14px;
+                                border:
+                                    1px solid #1e3c72;
+                            "
+                        >
+
+                            Description
+
+                        </th>
+
+
+                        <th
+                            style="
+                                padding: 12px;
+                                text-align: center;
+                                font-size: 14px;
+                                border:
+                                    1px solid #1e3c72;
+                            "
+                        >
+
+                            Ticket Info
+
+                        </th>
+
+
+                        <th
+                            style="
+                                padding: 12px;
+                                text-align: right;
+                                font-size: 14px;
+                                border:
+                                    1px solid #1e3c72;
+                            "
+                        >
+
+                            Amount (BDT)
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    <tr>
+
+
+                        <td
+                            style="
+                                padding: 15px 12px;
+                                border:
+                                    1px solid #dee2e6;
+                                font-size: 14px;
+                                color: #333;
+                            "
+                        >
+
+                            Travel Ticket(s) for Route:
+
+                            <br>
+
+                            <span
+                                style="
+                                    font-size: 12px;
+                                    color: #666;
+                                "
+                            >
+
+                                {{ ticket['departure'] }}
+
+                                ➔
+
+                                {{ ticket['destination'] }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td
+                            style="
+                                padding: 15px 12px;
+                                text-align: center;
+                                border:
+                                    1px solid #dee2e6;
+                                font-size: 14px;
+                                font-weight: bold;
+                                color: #000;
+                            "
+                        >
+
+                            {{ ticket['seat_info'] }}
+
+                        </td>
+
+
+                        <td
+                            style="
+                                padding: 15px 12px;
+                                text-align: right;
+                                border:
+                                    1px solid #dee2e6;
+                                font-size: 15px;
+                                font-weight: bold;
+                                color: #000;
+                            "
+                        >
+
+                            {{ ticket['price'] }}
+
+                        </td>
+
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td
+                            colspan="2"
+
+                            style="
+                                padding: 10px 12px;
+                                text-align: right;
+                                border:
+                                    1px solid #dee2e6;
+                                font-size: 13px;
+                                color: #555;
+                            "
+                        >
+
+                            Payment Method
+
+                        </td>
+
+
+                        <td
+                            style="
+                                padding: 10px 12px;
+                                text-align: right;
+                                border:
+                                    1px solid #dee2e6;
+                                font-size: 14px;
+                                color: #333;
+                                font-weight: bold;
+                            "
+                        >
+
+                            {{ ticket['payment_method'] }}
+
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td
+                            colspan="2"
+
+                            style="
+                                padding: 10px 12px;
+                                text-align: right;
+                                border:
+                                    1px solid #dee2e6;
+                                font-size: 13px;
+                                color: #555;
+                            "
+                        >
+
+                            Advance Paid
+
+                        </td>
+
+
+                        <td
+                            style="
+                                padding: 10px 12px;
+                                text-align: right;
+                                border:
+                                    1px solid #dee2e6;
+                                font-size: 14px;
+                                color: #198754;
+                                font-weight: bold;
+                            "
+                        >
+
+                            {{ ticket['price'] - ticket['due_amount'] }}
+
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td
+                            colspan="2"
+
+                            style="
+                                padding: 12px;
+                                text-align: right;
+                                border:
+                                    1px solid #dee2e6;
+                                font-size: 16px;
+                                font-weight: bold;
+                                background-color: #f8f9fa;
+                            "
+                        >
+
+                            DUE AMOUNT
+
+                        </td>
+
+
+                        <td
+                            style="
+                                padding: 12px;
+                                text-align: right;
+                                border:
+                                    1px solid #dee2e6;
+                                font-size: 18px;
+                                font-weight: bold;
+                                color: #dc3545;
+                                background-color: #f8f9fa;
+                            "
+                        >
+
+                            {{ ticket['due_amount'] }}
+
+                        </td>
+
+                    </tr>
+
+
+                </tbody>
+
+            </table>
+
+
+            <table
+                style="
+                    width: 100%;
+                    border-collapse: collapse;
+                "
+            >
+
+                <tr>
+
+
+                    <td
+                        style="
+                            width: 75%;
+                            vertical-align: top;
+                            padding-right: 20px;
+                        "
+                    >
+
+                        <h4
+                            style="
+                                margin: 0 0 5px 0;
+                                font-size: 13px;
+                                color: #333;
+                                text-transform: uppercase;
+                            "
+                        >
+
+                            Terms & Conditions:
+
+                        </h4>
+
+
+                        <ol
+                            style="
+                                margin: 0;
+                                padding-left: 15px;
+                                font-size: 11px;
+                                color: #666;
+                                line-height: 1.6;
+                            "
+                        >
+
+                            <li>
+                                Passengers must report at the boarding point at least 30 minutes before departure.
+                            </li>
+
+                            <li>
+                                For partial payments, the due amount must be cleared at the counter before boarding.
+                            </li>
+
+                            <li>
+                                Luggage weighing up to 15 KG per passenger is free. Extra luggage is chargeable.
+                            </li>
+
+                            <li>
+                                Cancellation and refund policies are strictly subject to BRTA guidelines.
+                            </li>
+
+                            <li>
+                                Jatra App BD is a ticketing platform and is not directly liable for transport delays.
+                            </li>
+
+                        </ol>
+
+                    </td>
+
+
+                    <td
+                        style="
+                            width: 25%;
+                            text-align: right;
+                            vertical-align: bottom;
+                        "
+                    >
+
+                        <div
+                            style="
+                                border:
+                                    1px solid #ccc;
+                                padding: 5px;
+                                display: inline-block;
+                                text-align: center;
+                                border-radius: 5px;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    width: 100px;
+                                    height: 100px;
+                                    background: #f4f4f4;
+                                    border:
+                                        1px dashed #ccc;
+                                    line-height: 100px;
+                                    font-size: 12px;
+                                    color: #888;
+                                "
+                            >
+
+                                System Validated
+
+                            </div>
+
+
+                            <div
+                                style="
+                                    background: #1e3c72;
+                                    color: white;
+                                    font-size: 9px;
+                                    padding: 3px;
+                                    font-weight: bold;
+                                    margin-top: 3px;
+                                "
+                            >
+
+                                VERIFIED E-TICKET
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                </tr>
+
+            </table>
+
+
+            <div
+                style="
+                    text-align: center;
+                    margin-top: 30px;
+                    font-size: 11px;
+                    color: #888;
+                    border-top:
+                        1px solid #eee;
+                    padding-top: 10px;
+                "
+            >
+
+                This is a computer generated document and does not require a physical signature.
+
+                <br>
+
+                <strong>
+
+                    © Jatra App BD |
+                    Empowering Smart Commute
+
+                </strong>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================================
+     তোমার আগের html2pdf library
+     REMOVE করা হয়নি।
+     ================================================================ -->
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+></script>
+
+
+<script>
+
+    function generateProfessionalViewPDF() {
+
+        /*
+        ================================================================
+        🌟🌟🌟 NEW PROFESSIONAL DOWNLOAD CONNECTION 🌟🌟🌟
+        ================================================================
+
+        আগের Download PDF button-কে নতুন Flask backend route-এর সাথে
+        connect করা হয়েছে।
+
+        Existing visible design change হয়নি।
+
+        নিচে তোমার পুরোনো html2pdf code-ও রাখা হয়েছে।
+        ================================================================
+        */
+
+        window.location.href =
+            "{{ url_for('download_professional_invoice', pnr=ticket['pnr']) }}";
+
+        return;
+
+
+        /*
+        ================================================================
+        OLD CODE START
+
+        এই code delete করা হয়নি।
+
+        উপরের return-এর কারণে এখন এটা execute হবে না।
+
+        ভবিষ্যতে যদি old browser-side PDF প্রয়োজন হয়,
+        উপরের window.location.href + return remove করলেই আবার চলবে।
+        ================================================================
+        */
+
+
+        const originalElement =
+            document.getElementById(
+                'invoiceToPrint'
+            );
+
+
+        const tempContainer =
+            document.createElement(
+                'div'
+            );
+
+
+        tempContainer.style.position =
+            'absolute';
+
+
+        tempContainer.style.top =
+            '-9999px';
+
+
+        tempContainer.style.left =
+            '-9999px';
+
+
+        tempContainer.style.width =
+            '800px';
+
+
+        tempContainer.style.background =
+            'white';
+
+
+        const clonedElement =
+            originalElement.cloneNode(
+                true
+            );
+
+
+        tempContainer.appendChild(
+            clonedElement
+        );
+
+
+        document.body.appendChild(
+            tempContainer
+        );
+
+
+        var opt = {
+
+            margin:
+                [
+                    0.2,
+                    0.2,
+                    0.2,
+                    0.2
+                ],
+
+            filename:
+                'Jatra_Invoice_PNR_{{ ticket["pnr"] }}.pdf',
+
+            image: {
+
+                type:
+                    'jpeg',
+
+                quality:
+                    0.98
+            },
+
+            html2canvas: {
+
+                scale:
+                    2,
+
+                useCORS:
+                    true,
+
+                logging:
+                    true,
+
+                letterRendering:
+                    true
+            },
+
+            jsPDF: {
+
+                unit:
+                    'in',
+
+                format:
+                    'a4',
+
+                orientation:
+                    'portrait'
+            }
+        };
+
+
+        html2pdf()
+
+            .set(
+                opt
+            )
+
+            .from(
+                clonedElement
+            )
+
+            .save()
+
+            .then(
+                () => {
+
+                    document.body.removeChild(
+                        tempContainer
+                    );
+                }
+            );
+
+
+        /*
+        ================================================================
+        OLD CODE END
+        ================================================================
+        */
+    }
+
+</script>
+
+
+{% endblock %}

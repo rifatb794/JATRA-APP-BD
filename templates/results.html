@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-3 mb-5">
+    <div class="col-md-11">
+
+        {% if transport == "Compare All" %}
+        <div class="row mb-4">
+            <h4 class="fw-bold text-dark mb-3">📊 Smart Route & Fare Insights</h4>
+            {% if cheapest %}
+            <div class="col-md-4">
+                <div class="shohoz-card bg-white border-bottom border-success border-4 shadow-sm p-3 h-100">
+                    <h6 class="text-success fw-bold text-uppercase mb-1">💰 Cheapest Option</h6>
+                    <h4 class="fw-bolder text-dark mb-1">৳ {{ cheapest.price }}</h4>
+                    <p class="text-muted small mb-0">{{ cheapest.type }} - {{ cheapest.operator }} ({{ cheapest.duration }})</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if fastest %}
+            <div class="col-md-4">
+                <div class="shohoz-card bg-white border-bottom border-primary border-4 shadow-sm p-3 h-100">
+                    <h6 class="text-primary fw-bold text-uppercase mb-1">⚡ Fastest Route</h6>
+                    <h4 class="fw-bolder text-dark mb-1">{{ fastest.duration }}</h4>
+                    <p class="text-muted small mb-0">{{ fastest.type }} - {{ fastest.operator }} (৳ {{ fastest.price }})</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if best_value %}
+            <div class="col-md-4">
+                <div class="shohoz-card bg-white border-bottom border-warning border-4 shadow-sm p-3 h-100" style="background: linear-gradient(to right, #ffffff, #fffdf5);">
+                    <h6 class="text-warning fw-bold text-uppercase mb-1">🌟 Best Value (Top Pick)</h6>
+                    <h4 class="fw-bolder text-dark mb-1">৳ {{ best_value.price }} <span class="fs-6 text-muted">/ {{ best_value.duration }}</span></h4>
+                    <p class="text-muted small mb-0">{{ best_value.type }} - {{ best_value.operator }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="shohoz-card p-0 overflow-hidden shadow-sm border border-success border-opacity-50">
+            <div class="bg-white p-4 text-center border-bottom border-2 border-success">
+                <h3 class="fw-bold text-success m-0">Available {{ transport }} Options</h3>
+                <p class="text-muted mt-1 mb-0">{{ frm }} ➡️ {{ to }} | 📅 {{ date }}</p>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 bg-white">
+                    <thead class="table-success text-success">
+                        <tr>
+                            <th class="py-3 px-4">Operator Name</th>
+                            <th class="py-3 text-center">Dep. Time</th>
+                            <th class="py-3 text-center">Duration</th>
+                            <th class="py-3 text-center">Seat Status</th>
+                            <th class="py-3 text-center">Fare</th>
+                            <th class="py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in trips %}
+                        <tr style="transition: 0.2s;">
+                            <td class="py-3 px-4 fw-bold text-primary">
+                                {% if t.type == 'Bus' %}🚍{% elif t.type == 'Train' %}🚆{% elif t.type == 'Launch' %}🚢{% else %}✈️{% endif %}
+                                {{ t.operator }}
+                            </td>
+                            <td class="py-3 text-center text-danger fw-bold">{{ t.dep_time }}</td>
+                            <td class="py-3 text-center text-muted small">⏱️ {{ t.duration }}</td>
+                            <td class="py-3 text-center">
+                                {% if t.low_seat %}
+                                    <span class="badge bg-danger px-3 py-2 animate__animated animate__pulse animate__infinite">🔥 Only {{ t.seats_available }} Left!</span>
+                                {% else %}
+                                    <span class="badge bg-info text-dark px-3 py-2">{{ t.seats_available }} Seats</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-center">
+                                <h5 class="fw-bolder text-success m-0">৳ {{ t.price }}</h5>
+                                {% if t.is_surge %}
+                                <small class="text-danger fw-bold d-block mt-1" style="font-size: 11px;">📈 High Demand</small>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-center">
+                                <form action="/checkout" method="POST">
+                                    <input type="hidden" name="transport" value="{{ t.type }}">
+                                    <input type="hidden" name="operator" value="{{ t.operator }}">
+                                    <input type="hidden" name="price" value="{{ t.price }}">
+                                    <input type="hidden" name="dep_time" value="{{ t.dep_time }}">
+                                    <input type="hidden" name="seats_available" value="{{ t.seats_available }}">
+                                    <input type="hidden" name="is_surge" value="{{ t.is_surge }}">
+                                    <input type="hidden" name="frm" value="{{ frm }}">
+                                    <input type="hidden" name="to" value="{{ to }}">
+                                    <input type="hidden" name="date" value="{{ date }}">
+                                    <button type="submit" class="btn btn-shohoz btn-sm fw-bold px-4 rounded-pill shadow-sm">Book Now</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if not trips %}
+            <div class="text-center p-5 bg-white">
+                <h4 class="text-muted">❌ No transports found for this route.</h4>
+                <p class="small text-danger">Please try a different date or transport type.</p>
+                <a href="/" class="btn btn-outline-success mt-2">Go Back</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-outline-danger px-5 py-2 rounded-pill fw-bold shadow-sm">⬅️ Go Back</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
