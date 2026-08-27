@@ -1314,3 +1314,4 @@ Until the team explicitly adds a license file, the source remains under the proj
 [Live Demo](https://jatra26.pythonanywhere.com) · [Back to Top](#jatra-app-bd)
 
 </div>
+
