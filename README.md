@@ -4,7 +4,7 @@
 
 ### Smart Multi-Transport Ticket Booking & Management System
 
-**One platform for Bus, Train, Air and Launch booking — built around the Bangladesh travel context.**
+**A unified platform for Bus, Train, Air and Launch booking, designed around the Bangladesh travel context.**
 
 [![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-Web%20Framework-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
@@ -1314,3 +1314,4 @@ Until the team explicitly adds a license file, the source remains under the proj
 [Live Demo](https://jatra26.pythonanywhere.com) · [Back to Top](#jatra-app-bd)
 
 </div>
+
