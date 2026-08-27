@@ -413,7 +413,7 @@ This demonstrates that cancellation affects **ticket state, financial state, loy
 ### 1.14 Review Reward Result
 
 <p align="center">
-  <img src="docs/screenshots/15-review-reward-result.png" alt="Passenger review result" width="92%">
+  <img src="docs/screenshots/16-review-reward-result.png" alt="Passenger review result" width="92%">
 </p>
 
 Passenger feedback appears in the public review area. Submitted ratings include the transport type, rating and comment.
@@ -425,7 +425,7 @@ The system also rewards a successful post-journey review with **5 Jatra Coins**.
 ### 1.15 Pending Review Form
 
 <p align="center">
-  <img src="docs/screenshots/16-review-form.png" alt="Pending review form" width="90%">
+  <img src="docs/screenshots/15-review-form.png" alt="Pending review form" width="90%">
 </p>
 
 The dashboard can identify that a user has completed journeys but has not submitted the corresponding number of reviews. In that case, a pending-review interface is displayed.
