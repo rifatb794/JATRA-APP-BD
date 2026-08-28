@@ -1248,7 +1248,7 @@ Each member receives **equal overall contribution credit (25% each)**. The roles
 - **Project Role:** Frontend/UI & Passenger Experience Integration
 - **Primary Focus:** Passenger-facing interface flow, form/UI integration, booking experience validation, review/reward flow, usability testing
 - **Professional Interest:** Information Security • Python • Penetration Testing • Cyber Threats
-- **GitHub:** [@srabonis181-huea](https://github.com/srabonis181-huea)
+- **GitHub:** [@srabonis181-hue](https://github.com/srabonis181-hue)
 - **Contribution Credit:** **25% — Equal Contributor**
 
 ### Opsora Ahmed
