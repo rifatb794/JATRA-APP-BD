@@ -1253,7 +1253,7 @@ Each member receives **equal overall contribution credit (25% each)**. The roles
 
 ### Opsora Ahmed
 - **Project Role:** Operator/Admin Workflow Integration & Documentation
-- **Primary Focus:** Operator and admin feature integration, dashboard workflow validation, feature testing, documentation and walkthrough preparation
+- **Primary Focus:** Operator and admin workflow integration, dashboard validation, feature testing, documentation, and walkthrough preparation
 - **Professional Interest:** AI & Machine Learning • Deep Learning • Image Processing • Python
 - **GitHub:** [@APSHORA](https://github.com/APSHORA)
 - **Contribution Credit:** **25% — Equal Contributor**
